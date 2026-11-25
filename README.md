@@ -1,4 +1,3 @@
-<img width="2020" height="2320" alt="ResearchReels-QR" src="https://github.com/user-attachments/assets/ee0e2a00-8924-4e12-acfd-79c602638f52" />
 <div align="center">
 
 <img src="assets/icons/icon-512.png" width="120" alt="ResearchReels logo">
