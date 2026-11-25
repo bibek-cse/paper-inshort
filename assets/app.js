@@ -30,7 +30,7 @@ const A = (u, txt, cls = '') => safe(u || '') ? `<a class="${cls}" href="${href(
 /* Paper text → safe HTML: "[Pinto et al., 2024](url)" becomes a clean hyperlink, "work([…](…))" gets its space back,
    leftover markdown/LaTeX noise is removed, and truncation never cuts through a link. */
 function rich(t, max = Infinity) {
-  t = RR.smooth(String(t || '').replace(/(\w)\(\[/g, '$1 ([')).replace(/\\(textbf|textit|emph|mathrm|mathbf)\{([^}]*)\}/g, '$2');
+  t = RR.smooth(RR.normLinks(t).replace(/(\w)\(\[/g, '$1 ([')).replace(/\\(textbf|textit|emph|mathrm|mathbf)\{([^}]*)\}/g, '$2');
   const re = /\[([^\]]{1,200})\]\((https?:[^)\s]+)\)/g, clean = x => RR.tex(x, true).replace(/\*\*|__|\$/g, '').replace(/\\[a-zA-Z]+/g, '').replace(/\s{2,}/g, ' ');
   let out = '', vis = 0, last = 0, done = false, m;
   const text = x => { if (done) return; x = clean(x); if (vis + x.length > max) { x = x.slice(0, Math.max(0, max - vis)).replace(/\s+\S*$/, '') + '…'; done = true; } vis += x.length; out += esc(x); };
@@ -331,8 +331,8 @@ function build() {
 }
 function closeDeck(pop = true) { $('#deck').classList.add('hidden'); $('#deckStage').replaceChildren(); S.deck = null; if (pop && location.hash.startsWith('#/r/')) history.back(); }
 function step(d) { const n = S.deck.slides.length, j = S.deck.i + d; if (j < 0) return; if (j >= n) return closeDeck(); S.deck.i = j; show(); }
-const ul = a => a?.length ? `<ul>${a.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` : '';
-const flow = a => a?.length ? `<div class="flow">${a.map((f, k) => (k ? '<div class="arrow">↓</div>' : '') + `<div>${esc(f)}</div>`).join('')}</div>` : '';
+const ul = a => a?.length ? `<ul>${a.map(p => `<li>${rich(p)}</li>`).join('')}</ul>` : '';
+const flow = a => a?.length ? `<div class="flow">${a.map((f, k) => (k ? '<div class="arrow">↓</div>' : '') + `<div>${rich(f)}</div>`).join('')}</div>` : '';
 
 function figHTML(fig, label) {
   const dk = S.deck, it = dk.it, srcs = (fig.srcs || [fig.src]).map(u => dk.crops[u] || u);
@@ -422,10 +422,10 @@ function explainHTML(fig) {
   if (e === 'loading') return `<div class="explain"><p class="spin">Reading the method section…</p></div>`;
   if (e.ai) {
     const a = e.ai;
-    return `<div class="explain"><p>${esc(a.overview)}</p>
-      ${a.components?.length ? `<h4>Building blocks</h4><ul>${a.components.map(c => `<li><b>${esc(c.name)}</b> — ${esc(c.role)}</li>`).join('')}</ul>` : ''}
-      ${a.dataflow?.length ? `<h4>Data flow</h4>${flow(a.dataflow)}` : ''}${a.training ? `<h4>Training</h4><p>${esc(a.training)}</p>` : ''}
-      ${a.why_it_works ? `<h4>Why it works</h4><p>${esc(a.why_it_works)}</p>` : ''}<p class="hint small">AI explanation of Fig. ${fig.n} from the caption + method text.</p>${ref}</div>`;
+    return `<div class="explain"><p>${rich(a.overview)}</p>
+      ${a.components?.length ? `<h4>Building blocks</h4><ul>${a.components.map(c => `<li><b>${rich(c.name)}</b> — ${rich(c.role)}</li>`).join('')}</ul>` : ''}
+      ${a.dataflow?.length ? `<h4>Data flow</h4>${flow(a.dataflow)}` : ''}${a.training ? `<h4>Training</h4><p>${rich(a.training)}</p>` : ''}
+      ${a.why_it_works ? `<h4>Why it works</h4><p>${rich(a.why_it_works)}</p>` : ''}<p class="hint small">AI explanation of Fig. ${fig.n} from the caption + method text.</p>${ref}</div>`;
   }
   return `<div class="explain"><h4>In the authors’ words</h4>${(e.ctx || []).map(c => `<blockquote>${rich(c)}</blockquote>`).join('') || '<p class="hint">No method text found near this figure.</p>'}
     <p class="hint small">Short excerpts where the paper describes this figure. Add an AI key in ⚙ for a plain-English walkthrough.</p>${ref}</div>`;

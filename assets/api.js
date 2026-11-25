@@ -64,8 +64,10 @@ RR.tex = (str, keepEdges) => {
 /* Fix glued text from PDFs/HTML so it reads naturally:
    "work(Pinto et al., 2024)" → "work (Pinto et al., 2024)", "inputs.Left:" → "inputs. Left:", "(Li, 2023)shows" → "(Li, 2023) shows".
    URLs and markdown links are never touched. */
+/* "[a](url "title")", "[a](<url>)" → "[a](url)" so every later step sees one simple link form */
+RR.normLinks = str => String(str || '').replace(/\]\(\s*<?(https?:\/\/[^\s)>]+)>?(?:\s+(?:"[^"]*"|'[^']*'))?\s*\)/g, ']($1)');
 RR.smooth = str => {
-  let t = String(str || ''); if (!t) return t;
+  let t = RR.normLinks(str); if (!t) return t;
   const keep = []; t = t.replace(/\[[^\]]{1,200}\]\(https?:[^)\s]+\)|https?:\/\/[^\s)\]]+/g, m => { keep.push(m); return '\u0004' + (keep.length - 1) + '\u0004'; });
   t = t.replace(/([A-Za-z])\((?=\u0004|[A-Z][A-Za-z'’\-]+(?:\s+et al\.?|,|\s+and\s|\s*&)[^()]{0,80}\d{4}[a-z]?[);])/g, '$1 (')     // space before citation brackets
        .replace(/(\d{4}[a-z]?\)|\u0004\d+\u0004\))(?=[A-Za-z])/g, '$1 ')                                                        // space after "(…, 2024)"
@@ -374,7 +376,7 @@ function pickArch(figs) {
   return figs.map((f, i) => ({ f, s: (ARCH_RE.test(f.caption) ? 10 : 0) + (/proposed|our /i.test(f.caption) ? 4 : 0) - i * 0.5 })).sort((a, b) => b.s - a.s)[0].f;
 }
 function contextFor(text, n) {
-  const paras = text.split(/\n{2,}/).map(s => s.replace(/\s+/g, ' ').trim()).filter(s => s.length > 120 && !/^!\[|^(figure|fig\.)\s*\d/i.test(s));
+  const paras = text.split(/\n{2,}/).map(s => s.replace(/\s+/g, ' ').trim()).filter(s => s.length > 120 && !/^!\[|^[*_\s]*(figure|fig\.|table)\s*\d/i.test(s));
   const ref = new RegExp(`(Fig(ure|\\.)?\\s*~?${n})(?!\\d)`, 'i');
   let hits = paras.filter(p => ref.test(p)).slice(0, 3);
   if (hits.length < 2) {
@@ -486,7 +488,7 @@ RR.mdPlain = s => RR.smooth(String(s || '')).replace(/(\w)\(\[/g, '$1 ([').repla
 const RES_RE = /(result|qualitative|visuali[sz]ation|comparison with|compared with|performance|ablation|heat ?map|localization result|detection result|examples of|samples)/i;
 RR.figures = async p => {
   const id = await RR.ensureArxiv(p).catch(() => ''); if (!id) return null;
-  const key = 'fig7:' + id; const c = RR.cache.get(key, 24 * 14); if (c !== undefined) return c;
+  const key = 'fig8:' + id; const c = RR.cache.get(key, 24 * 14); if (c !== undefined) return c;
   const h = RR.settings.jinaKey ? { headers: { Authorization: 'Bearer ' + RR.settings.jinaKey } } : {};
   // 1) arXiv native HTML (2024+)  2) ar5iv (older arXiv papers)  3) proxy fallback for either
   const tries = [
@@ -496,13 +498,14 @@ RR.figures = async p => {
   ];
   let got = null;
   for (const t of tries) { try { const r = await t(); if (r.figs.length) { got = r; break; } } catch (e) {} }
+  if (got) { got.text = RR.normLinks(got.text); got.figs.forEach(f => { f.caption = RR.normLinks(f.caption); }); }
   if (!got) { RR.cache.set(key, null); return null; }
   got.figs.forEach(f => { f.caption = RR.smooth(RR.tex(f.caption)); }); got.text = RR.smooth(RR.tex(got.text));
   const figs = got.figs.slice(0, 12), arch = pickArch(figs);
   const results = figs.find(f => f !== arch && RES_RE.test(f.caption)) || null;
   const teaser = figs.find(f => f.n === 1 && f !== arch) || null;
   const ex = extras(got.isHtml ? got.raw : got.text, got.isHtml);
-  const paras = got.text.split(/\n{2,}/).map(x => x.replace(/\s+/g, ' ').trim()).filter(x => x.length > 80 && !/^!\[|^\W*(figure|fig\.|table)\s*\d/i.test(x));
+  const paras = got.text.split(/\n{2,}/).map(x => x.replace(/\s+/g, ' ').trim()).filter(x => x.length > 80 && !/^!\[|^[*_\W]*(figure|fig\.|table)\s*\d/i.test(x));
   const ctxOf = {}; figs.forEach(f => { const re = new RegExp(`(Fig(ure|\\.)?\\s*~?${f.n})(?!\\d)`, 'i'); const h = paras.find(x => re.test(x)); if (h) { const P = protect(h), sn = P.s.match(/[^.]*\bFig(?:ure|\.)?\s*~?\d[^.]*\./i); ctxOf[f.n] = RR.mdCut(P.back((sn ? sn[0] : P.s).trim()), 360); } });
   const out = { id, html: got.html, figs, arch, results, teaser, ctxOf, ...ex, context: contextFor(got.text, arch.n),
     method: (got.text.match(/#+\s*\d*\.?\s*(?:Method|Methodology|Proposed[^\n]*|Approach)[^\n]*\n([\s\S]{200,3500})/i)?.[1] || '').replace(/\s+/g, ' ').slice(0, 3500) };
@@ -590,7 +593,7 @@ RR.aiSummary = async (p, extra = '') => {
   RR.cache.set(key, out); return out;
 };
 RR.aiArch = async (p, fig) => {
-  const key = 'aiarch:' + p.id + ':' + fig.arch.n; const c = RR.cache.get(key, 24 * 60); if (c) return c;
+  const key = 'aiarch2:' + p.id + ':' + fig.arch.n; const c = RR.cache.get(key, 24 * 60); if (c) return c;
   const j = await RR.llm(`Explain a deep-learning architecture figure to a PhD student using ONLY the caption and excerpts. Return JSON:
 {"overview":"2 sentences","components":[{"name":"","role":"1 sentence"}],"dataflow":["4-7 steps"],"training":"losses if mentioned else ''","why_it_works":"1-2 sentences"}`,
   `Paper: ${p.title}\nFigure ${fig.arch.n} caption: ${RR.mdPlain(fig.arch.caption)}\nExcerpts:\n${fig.context.join('\n')}\nMethod: ${fig.method.slice(0, 2500)}\nAbstract: ${p.abstract}`);
