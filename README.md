@@ -1,3 +1,4 @@
+<img width="2020" height="2320" alt="ResearchReels-QR" src="https://github.com/user-attachments/assets/ee0e2a00-8924-4e12-acfd-79c602638f52" />
 <div align="center">
 
 <img src="assets/icons/icon-512.png" width="120" alt="ResearchReels logo">
@@ -14,7 +15,7 @@
 [![Live](https://img.shields.io/badge/content-updates%20live-ff626c?style=flat-square)](#-always-fresh)
 [![Top venues](https://img.shields.io/badge/venues-CORE%20A*%2FA%2FB%20%2B%20IEEE%2FACM-ffcc66?style=flat-square)](#-only-research-worth-your-time)
 
-<img width="320" alt="Scan to open ResearchReels" src="https://github.com/user-attachments/assets/f44db127-a6d4-405b-ab69-b775a7d1f366" />
+<img width="320" height="320" alt="ResearchReels-QR" src="https://github.com/user-attachments/assets/cee313a2-2fce-43e9-8bc8-9e222a4a2f9a" />
 
 **Scan to open** · or visit **https://bibek-cse.github.io/research-reels/**
 
