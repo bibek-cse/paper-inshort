@@ -1,10 +1,10 @@
 /*!
- * ResearchReels — https://bibek-cse.github.io/research-reels/
+ * PaperInShot — https://bibek-cse.github.io/research-reels/
  * Copyright (c) 2026 Bibek (GitHub: bibek-cse). All rights reserved.
  * Unauthorised copying, modification, redistribution or re-hosting of this file,
  * via any medium, is prohibited without prior written permission. See LICENSE.
  */
-/* ResearchReels data layer. Everything is fetched live from free, CORS-enabled APIs — no server, no keys required:
+/* PaperInShot data layer. Everything is fetched live from free, CORS-enabled APIs — no server, no keys required:
    OpenAlex + Crossref (papers & venues) · Semantic Scholar (TL;DR, arXiv ids) · arXiv HTML via r.jina.ai (figures, text)
    · ccfddl/ccf-deadlines (deadlines + CORE ranks) · ipwho.is (optional campus-network detection).                      */
 (() => {

@@ -1,5 +1,5 @@
 /*!
- * ResearchReels — https://bibek-cse.github.io/research-reels/
+ * PaperInShot — https://bibek-cse.github.io/research-reels/
  * Copyright (c) 2026 Bibek (GitHub: bibek-cse). All rights reserved.
  * Unauthorised copying, modification, redistribution or re-hosting of this file,
  * via any medium, is prohibited without prior written permission. See LICENSE.

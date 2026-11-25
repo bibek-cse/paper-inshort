@@ -1,10 +1,10 @@
 /*!
- * ResearchReels — https://bibek-cse.github.io/research-reels/
+ * PaperInShot — https://bibek-cse.github.io/research-reels/
  * Copyright (c) 2026 Bibek (GitHub: bibek-cse). All rights reserved.
  * Unauthorised copying, modification, redistribution or re-hosting of this file,
  * via any medium, is prohibited without prior written permission. See LICENSE.
  */
-/* ResearchReels UI — live, client-side, no build step, no inline scripts (CSP-safe). Data layer: api.js */
+/* PaperInShot UI — live, client-side, no build step, no inline scripts (CSP-safe). Data layer: api.js */
 (() => {
 'use strict';
 const RR = window.RR, D = RR.DOMAINS, safe = RR.safeUrl;
@@ -12,7 +12,7 @@ const KIND = { paper: 'Paper', idea: 'Research idea', concept: 'Concept, made ea
 const STOP = new Set('the and for with from that this into using based towards toward via over under are our their its than then them these those such can not but has have had was were been being what when where which while who will would could should may might also more most less very much many any each other some only same new novel approach method methods paper propose proposed show results model models data dataset learning deep neural network networks task tasks study analysis framework'.split(' '));
 const PKEY = 'rr_profile_v1', CHUNK = 20;
 const OWNER = { name: 'Bibek', gh: 'bibek-cse', home: 'https://bibek-cse.github.io/research-reels/', year: 2026 };
-const COPY = `<p class="copyright">© ${OWNER.year} ResearchReels · created by <a href="https://github.com/${OWNER.gh}" target="_blank" rel="noopener noreferrer">${OWNER.name} (@${OWNER.gh})</a> · All rights reserved.</p>`;
+const COPY = `<p class="copyright">© ${OWNER.year} PaperInShot · created by <a href="https://github.com/${OWNER.gh}" target="_blank" rel="noopener noreferrer">${OWNER.name} (@${OWNER.gh})</a> · All rights reserved.</p>`;
 const ALLOWED_HOSTS = ['bibek-cse.github.io', 'localhost', '127.0.0.1'];
 const FEED_DOMAINS = ['deepfake', 'watermark', 'voice', 'forensics', 'face', 'signature', 'biometrics', 'document', 'architecture'];
 const S = {
@@ -266,7 +266,7 @@ async function renderDeadlines() {
 }
 function ics(c) {
   const z = x => x.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z', clean = s => String(s).replace(/[\r\n,;]/g, ' ');
-  const body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ResearchReels//EN', 'BEGIN:VEVENT', 'UID:' + clean(c.name + c.what).replace(/\W/g, '') + '@rr',
+  const body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//PaperInShot//EN', 'BEGIN:VEVENT', 'UID:' + clean(c.name + c.what).replace(/\W/g, '') + '@rr',
     'DTSTAMP:' + z(new Date()), 'DTSTART:' + z(c.t), 'DTEND:' + z(new Date(+c.t + 36e5)), 'SUMMARY:' + clean(c.name + ' — ' + c.what), 'URL:' + (c.url || ''),
     'BEGIN:VALARM', 'TRIGGER:-P7D', 'ACTION:DISPLAY', 'DESCRIPTION:7 days to ' + clean(c.name), 'END:VALARM',
     'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY', 'DESCRIPTION:Tomorrow: ' + clean(c.name), 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
@@ -585,7 +585,7 @@ function openAsk(it) {
     <h4>Quick questions</h4>
     <div class="chips wrap ask-quick">${QUICK.map(q => `<button class="chip" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
     ${it.pdf ? `<p class="hint small">Want the AI to read the full PDF? ${A(it.pdf, 'Download the PDF')} and attach it in the chat.</p>` : ''}
-    <p class="hint small">Your question also gets copied to the clipboard as a backup. ResearchReels never sees your AI account.</p>`;
+    <p class="hint small">Your question also gets copied to the clipboard as a backup. PaperInShot never sees your AI account.</p>`;
   $('#askSheet').classList.remove('hidden'); $('#askSheet').dataset.id = it.id; $('#askSheet').dataset.ctx = ctx;
 }
 function onAskClick(e) {
@@ -639,7 +639,7 @@ function renderSettings() {
   const fld = (k, ph, type = 'text') => `<input class="field" data-field="${k}" type="${type}" placeholder="${esc(ph)}" value="${esc(s[k])}" autocomplete="off" spellcheck="false">`;
   $('#settingsBody').innerHTML = `
     <div class="sheet-head"><h3>Customise</h3><button class="icon-btn" data-close aria-label="Close">✕</button></div>
-    ${S.installEvt ? '<button class="install-btn" id="installBtn">⤓ Install ResearchReels on this device</button>' : `<p class="hint small">${/iphone|ipad/i.test(navigator.userAgent) ? 'To install: Safari → Share → “Add to Home Screen”.' : 'To install: browser menu → “Install app” / “Add to Home screen”.'}</p>`}
+    ${S.installEvt ? '<button class="install-btn" id="installBtn">⤓ Install PaperInShot on this device</button>' : `<p class="hint small">${/iphone|ipad/i.test(navigator.userAgent) ? 'To install: Safari → Share → “Add to Home Screen”.' : 'To install: browser menu → “Install app” / “Add to Home screen”.'}</p>`}
     <h4>Theme</h4><div class="segs">${opt('theme', 'midnight', '🌙 Midnight')}${opt('theme', 'paper', '📜 Paper')}${opt('theme', 'neon', '⚡ Neon')}${opt('theme', 'ocean', '🌊 Ocean')}</div>
     <h4>Accent</h4><div class="swatches">${['', '#ff5a5f', '#7c5cff', '#00c2a8', '#ff9f1c', '#3a86ff', '#e63946'].map(c => `<button data-accent="${c}" class="sw ${s.accent === c ? 'on' : ''}" data-c="${c}" aria-label="accent ${c || 'default'}"></button>`).join('')}</div>
     <h4>Card cover</h4><div class="segs">${opt('hero', 'figure', 'Architecture figure')}${opt('hero', 'gradient', 'Paper header only')}</div>
@@ -661,7 +661,7 @@ function renderSettings() {
     <details><summary><h4>⚡ API limits (optional)</h4></summary>${fld('email', 'Email for OpenAlex/Crossref polite pool')}${fld('oaKey', 'OpenAlex API key', 'password')}${fld('jinaKey', 'Jina Reader key (more figure lookups)', 'password')}</details>
     <div class="row2"><button class="ghost" id="clearCache">Clear cache</button><button class="ghost" id="resetProfile">Reset likes &amp; interests</button></div>
     <p class="hint small">Sources: OpenAlex · Crossref · Semantic Scholar · arXiv · ccf-deadlines. Tiers: CORE via ccf-deadlines.</p>
-    <div class="about"><b>About</b><br>ResearchReels — design, code, icon and curated content © ${OWNER.year} ${OWNER.name} (@${OWNER.gh}). All rights reserved. Copying, re-hosting or redistributing this app or its code without written permission is not allowed. Paper metadata belongs to its publishers and authors.</div>${COPY}`;
+    <div class="about"><b>About</b><br>PaperInShot — design, code, icon and curated content © ${OWNER.year} ${OWNER.name} (@${OWNER.gh}). All rights reserved. Copying, re-hosting or redistributing this app or its code without written permission is not allowed. Paper metadata belongs to its publishers and authors.</div>${COPY}`;
   $('#settingsBody').querySelectorAll('.sw').forEach(b => { b.style.background = b.dataset.c || 'conic-gradient(#ff5a5f,#7c5cff,#00c2a8,#ff5a5f)'; });
 }
 function onSettingsClick(e) {
@@ -741,10 +741,10 @@ function wire() {
 }
 
 function guard() {
-  console.info('%cResearchReels © ' + OWNER.year + ' ' + OWNER.name + ' (@' + OWNER.gh + ') — all rights reserved. ' + OWNER.home, 'color:#ffcc66;font-weight:700');
+  console.info('%cPaperInShot © ' + OWNER.year + ' ' + OWNER.name + ' (@' + OWNER.gh + ') — all rights reserved. ' + OWNER.home, 'color:#ffcc66;font-weight:700');
   if (ALLOWED_HOSTS.includes(location.hostname)) return;
   const g = $('#copyGuard');
-  g.innerHTML = `⚠️ This is an unauthorised copy of <b>ResearchReels</b> © ${OWNER.year} ${esc(OWNER.name)}. <a href="${OWNER.home}" rel="noopener">Open the original ↗</a>`;
+  g.innerHTML = `⚠️ This is an unauthorised copy of <b>PaperInShot</b> © ${OWNER.year} ${esc(OWNER.name)}. <a href="${OWNER.home}" rel="noopener">Open the original ↗</a>`;
   g.classList.remove('hidden');
 }
 

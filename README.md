@@ -1,20 +1,20 @@
 <div align="center">
 
-<img src="assets/icons/icon-512.png" width="120" alt="ResearchReels logo">
+<img src="assets/icons/icon-512.png" width="120" alt="PaperInShot logo">
 
-# ResearchReels 🎞️
+# PaperInShot π
 ### Top-venue research, one swipe at a time.
 
 **Stop scrolling through 14-page PDFs. Start swiping through the ideas that matter.**
 
-[![Open the app](https://img.shields.io/badge/▶%20Open%20ResearchReels-bibek--cse.github.io%2Fresearch--reels-0b1230?style=for-the-badge)](https://bibek-cse.github.io/research-reels/)
+[![Open the app](https://img.shields.io/badge/▶%20Open%20PaperInShot-bibek--cse.github.io%2Fresearch--reels-0b1230?style=for-the-badge)](https://bibek-cse.github.io/research-reels/)
 
 [![Free](https://img.shields.io/badge/price-free-4cd6a0?style=flat-square)](#-free-private--secure)
 [![Installable](https://img.shields.io/badge/app-installable%20PWA-7c5cff?style=flat-square)](#-install-it-like-an-app)
 [![Live](https://img.shields.io/badge/content-updates%20live-ff626c?style=flat-square)](#-always-fresh)
 [![Top venues](https://img.shields.io/badge/venues-CORE%20A*%2FA%2FB%20%2B%20IEEE%2FACM-ffcc66?style=flat-square)](#-only-research-worth-your-time)
 
-<img width="320" height="320" alt="ResearchReels-QR" src="https://github.com/user-attachments/assets/cee313a2-2fce-43e9-8bc8-9e222a4a2f9a" />
+<img width="320" alt="Scan to open PaperInShot" src="assets/qr.png" />
 
 **Scan to open** · or visit **https://bibek-cse.github.io/research-reels/**
 
@@ -22,9 +22,9 @@
 
 ---
 
-## ✨ What is ResearchReels?
+## ✨ What is PaperInShot?
 
-ResearchReels turns the latest research papers into **short, swipeable reels**, like Inshorts or Instagram Stories but made for researchers.
+PaperInShot turns the latest research papers into **short, swipeable reels**, like Inshorts or Instagram Stories but made for researchers.
 
 Each paper becomes a 60-second story: **why it matters → key points → what's new → the real architecture figure → results → limitations**, with a one-tap link to the original paper.
 
@@ -49,7 +49,7 @@ The app finds each paper's **original architecture figure**, crops it cleanly, a
 Stuck on a complicated diagram? One tap shows the **authors' own explanation** of that figure. Add a free AI key and you get a plain-English walkthrough: building blocks → data flow → training → why it works.
 
 ### 🎓 Campus mode
-On your **institute Wi-Fi** (IIT, NKN, ERNET and more), ResearchReels detects your campus access automatically. It loads **more papers, including subscription-only IEEE/ACM ones**, and opens the full text straight away.
+On your **institute Wi-Fi** (IIT, NKN, ERNET and more), PaperInShot detects your campus access automatically. It loads **more papers, including subscription-only IEEE/ACM ones**, and opens the full text straight away.
 
 ### 📊 SOTA at a glance
 A **state-of-the-art table for every domain**: key models, venue, year, core idea, paper and code. Plus a live **📈 Rising now** list of the fastest-growing new papers.
@@ -71,7 +71,7 @@ Like, save and search, and your **For You** feed learns what you care about. Eve
 
 ## 📱 Install it like an app
 
-ResearchReels installs on your phone or laptop with its own icon and works offline with your cached content.
+PaperInShot installs on your phone or laptop with its own icon and works offline with your cached content.
 
 | Device | How |
 |---|---|
@@ -105,13 +105,13 @@ ResearchReels installs on your phone or laptop with its own icon and works offli
 
 Found a bug, want a new venue or domain, or have an idea? Open an [issue](https://github.com/bibek-cse/research-reels/issues). Feedback is welcome!
 
-If ResearchReels saves you time, **⭐ star this repo** and share the QR with your lab.
+If PaperInShot saves you time, **⭐ star this repo** and share the QR with your lab.
 
 ---
 
 <div align="center">
 
-**ResearchReels** · Designed & built by **[Bibek (@bibek-cse)](https://github.com/bibek-cse)**
+**PaperInShot** · Designed & built by **[Bibek (@bibek-cse)](https://github.com/bibek-cse)**
 
 © 2026 Bibek (bibek-cse). **All rights reserved.**
 This repository is public so the app can be hosted. It is **not** open source.
