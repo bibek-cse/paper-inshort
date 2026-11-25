@@ -24,7 +24,7 @@
 
 ## ✨ What is PaperInShot?
 
-PaperInShot turns the latest research papers into **short, swipeable reels**, like Inshorts or Instagram Stories but made for researchers.
+PaperInShot turns the latest research papers into **short, swipeable slides**, like Inshorts or Instagram Stories but made for researchers.
 
 Each paper becomes a 60-second story: **why it matters → key points → what's new → the real architecture figure → results → limitations**, with a one-tap link to the original paper.
 
@@ -58,7 +58,7 @@ A **state-of-the-art table for every domain**: key models, venue, year, core ide
 **Live conference deadlines** with CORE ranks and countdowns in your time zone. A reminder banner appears when a deadline is under 14 days away, and one tap adds it to your calendar with **7-day and 1-day alarms**.
 
 ### 💡 Ideas & concepts
-- **Concept reels** explain hard topics (EER, Grad-CAM, ViT, diffusion, PAD, JND…) in plain language.
+- **Concept slides** explain hard topics (EER, Grad-CAM, ViT, diffusion, PAD, JND…) in plain language.
 - **Fresh research ideas** generated from today's papers (optional AI).
 
 ### ❤️ Made for you

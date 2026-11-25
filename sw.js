@@ -5,7 +5,7 @@
  * via any medium, is prohibited without prior written permission. See LICENSE.
  */
 // PaperInShot service worker: app shell = stale-while-revalidate; never touches third-party API traffic.
-const C = 'rr-v24';
+const C = 'rr-v25';
 const SHELL = ['./', 'index.html', 'manifest.json', 'assets/style.css', 'assets/app.js', 'assets/api.js', 'assets/story.js', 'assets/venue.js', 'assets/venues.js',
   'assets/vendor/js-yaml.min.js', 'assets/icons/icon-192.png', 'data/feed.json', 'data/concepts.json', 'data/conferences.json', 'data/sota.json'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(C).then(c => c.addAll(SHELL))); self.skipWaiting(); });

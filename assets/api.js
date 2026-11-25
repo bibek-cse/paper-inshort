@@ -608,7 +608,7 @@ RR.llm = async (system, user) => {
   }
   const m = txt.match(/\{[\s\S]*\}/); return JSON.parse(m ? m[0] : txt);
 };
-const PAPER_SYS = `You turn research papers into accurate reel slides for PhD researchers in computer vision, deepfakes, media forensics, watermarking, document analysis and biometrics.
+const PAPER_SYS = `You turn research papers into accurate, short slides for PhD researchers in computer vision, deepfakes, media forensics, watermarking, document analysis and biometrics.
 Use ONLY the given text. Never invent numbers or names. Plain, vivid English. Return JSON:
 {"inshort":"<=60 words","why":"1-2 sentences","keypoints":["3-5 bullets"],"novelty":"1-2 sentences","architecture":["3-6 steps input→output"],
 "results":["2-4 bullets, numbers only if present"],"limitations":"1-2 sentences or 'Not stated'","eli5":"2 sentences with an analogy"}`;

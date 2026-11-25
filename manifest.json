@@ -2,7 +2,7 @@
  "id": "./",
  "name": "PaperInShot — top-venue papers in 60 seconds",
  "short_name": "PaperInShot",
- "description": "Live reels of A*/A/B and IEEE/ACM papers on deepfakes, biometrics, watermarking, forensics and CV. © 2026 Bibek (bibek-cse).",
+ "description": "Live slides of A*/A/B and IEEE/ACM papers on deepfakes, biometrics, watermarking, forensics and CV. © 2026 Bibek (bibek-cse).",
  "start_url": "./?source=pwa",
  "scope": "./",
  "display": "standalone",

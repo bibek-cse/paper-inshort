@@ -192,7 +192,7 @@ function render() {
   if (S.tab === 'venue') return renderVenueTab();
   if (S.tab === 'idea') return renderIdeas();
   S.view = list(); S.shown = 0;
-  if (!S.view.length) { feed.innerHTML = `<div class="empty">${S.tab === 'saved' ? 'Nothing saved yet — tap ☆ on any reel.' : 'Loading…'}</div>`; return; }
+  if (!S.view.length) { feed.innerHTML = `<div class="empty">${S.tab === 'saved' ? 'Nothing saved yet — tap ☆ on any paper.' : 'Loading…'}</div>`; return; }
   feed.innerHTML = ''; feed.scrollTop = 0; more();
 }
 function more() {   // chunked rendering keeps the DOM small and scrolling smooth
@@ -368,7 +368,7 @@ function slideHTML(s, i, n) {
     return `<div class="slide">${head}${r === undefined ? '<div class="shimmer"></div><p class="hint small">Finding similar papers live…</p>'
       : !r.length ? '<p class="hint">No related papers found right now.</p>'
       : `<div class="rels">${r.map(x => `<button class="rel" data-rel="${esc(x.id)}"><span class="rel-v">${esc(venueYear(x) || 'Paper')}</span><b>${esc(x.title)}</b><span class="rel-m">${esc(cite(x))}${x.cites ? ' · ' + x.cites + ' cites' : ''}${(x.date || '') > new Date(Date.now() - 60 * 864e5).toISOString().slice(0, 10) ? ' · <em>new</em>' : ''}</span></button>`).join('')}</div>
-        <p class="hint small">Live from OpenAlex related works${dk.s2?.s2id ? ' + Semantic Scholar recommendations' : ''} · tap one to open its reel</p>`}</div>`;
+        <p class="hint small">Live from OpenAlex related works${dk.s2?.s2id ? ' + Semantic Scholar recommendations' : ''} · tap one to open its slides</p>`}</div>`;
   }
   if (s.type === 'figfull') {
     const g = s.fig, srcs = (g.srcs || [g.src]).map(u => dk.crops[u] || u), open = !!dk.capOpen;
@@ -612,7 +612,7 @@ function onAskClick(e) {
 }
 
 // ---------------------------------------------------------------- actions & search
-/* Share: a link that opens THIS paper's reel in PaperInShot, plus the original paper link */
+/* Share: a link that opens THIS paper's slides in PaperInShot, plus the original paper link */
 const appLink = it => OWNER.home + '#/r/' + encodeURIComponent(it.id);
 function shareText(it) { return `📄 ${it.title}${it.venueShort || it.venue ? ' (' + [it.venueShort || it.venue, it.year].filter(Boolean).join(' ') + ')' : ''}\nRead it in 60 seconds on PaperInShot π`; }
 function share(it) {
@@ -631,7 +631,7 @@ function share(it) {
       <button class="sh cp" data-sh="copy"><span>🔗</span>Copy link</button>
     </div>
     <div class="sharelinks">
-      <p class="hint small">Opens this paper's reel in PaperInShot:</p><div class="linkbox"><code>${esc(link)}</code></div>
+      <p class="hint small">Opens this paper's slides in PaperInShot:</p><div class="linkbox"><code>${esc(link)}</code></div>
       ${src ? `<button class="ghost" data-sh="copysrc">Copy original paper link (${esc(src.label)})</button>` : ''}
       ${it.type === 'paper' ? '<button class="ghost" data-sh="cite">Copy citation</button>' : ''}
     </div>`;
@@ -666,11 +666,11 @@ function onFeedClick(e) {
   else if (a === 'share') share(it);
   else if (a === 'ask') openAsk(it);
 }
-/* Search: results appear while you type (debounced), tap one → its reel opens straight away */
+/* Search: results appear while you type (debounced), tap one → its slides open straight away */
 const SUGGEST = ['image generation', 'deepfake detection', 'image watermarking', 'voice anti-spoofing', 'forgery localization', 'face recognition', 'signature verification', 'vision-language model'];
 let searchTimer = null, searchSeq = 0;
 function resultRow(x) { S.extra[x.id] = x;
-  return `<button class="mini res" data-id="${esc(x.id)}"><span class="res-top">${tierBadge(x)}${access(x)}${x.cites ? `<span class="cites">↗ ${x.cites}</span>` : ''}</span><b>${esc(x.title)}</b><span>${esc(cite(x))}</span><i class="res-go">Open reel ›</i></button>`; }
+  return `<button class="mini res" data-id="${esc(x.id)}"><span class="res-top">${tierBadge(x)}${access(x)}${x.cites ? `<span class="cites">↗ ${x.cites}</span>` : ''}</span><b>${esc(x.title)}</b><span>${esc(cite(x))}</span><i class="res-go">Open slides ›</i></button>`; }
 function searchHome() {
   const rec = S.profile.searches.slice(0, 6);
   $('#searchResults').innerHTML = `${rec.length ? `<h4>Recent</h4><div class="chips wrap">${rec.map(q => `<button class="chip" data-sq="${esc(q)}">↺ ${esc(q)}</button>`).join('')}</div>` : ''}
@@ -710,7 +710,7 @@ function onSearchClick(e) {
   const r = e.target.closest('.res[data-id]'); if (!r) return;
   rememberSearch($('#searchInput').value);
   const it = S.extra[r.dataset.id] || findItem(r.dataset.id); if (!it) return;
-  sh.classList.add('hidden'); openDeck(it);           // close the search first, then open the paper's reel
+  sh.classList.add('hidden'); openDeck(it);           // close the search first, then open the paper's slides
 }
 
 // ---------------------------------------------------------------- settings
