@@ -407,3 +407,8 @@ a.cite{color:var(--accent2);text-decoration:underline;text-decoration-thickness:
 .v-eds,.v-links{list-style:none;padding:0;margin:0}
 .v-eds li,.v-links li{padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
 @media (max-width:420px){.v-ranks{grid-template-columns:1fr 1fr}.v-rank.big{grid-column:1/3}}
+
+/* tabs: show that the row scrolls (Venues, Deadlines, Saved sit to the right on phones) */
+.tabs{mask-image:linear-gradient(90deg,#000 85%,transparent);-webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);padding-right:28px}
+.tabs.end{mask-image:none;-webkit-mask-image:none}
+.tabs button{padding:8px 9px;font-size:15px}

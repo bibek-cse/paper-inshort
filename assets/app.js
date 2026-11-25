@@ -30,7 +30,7 @@ const A = (u, txt, cls = '') => safe(u || '') ? `<a class="${cls}" href="${href(
 /* Paper text → safe HTML: "[Pinto et al., 2024](url)" becomes a clean hyperlink, "work([…](…))" gets its space back,
    leftover markdown/LaTeX noise is removed, and truncation never cuts through a link. */
 function rich(t, max = Infinity) {
-  t = String(t || '').replace(/(\w)\(\[/g, '$1 ([').replace(/\\(textbf|textit|emph|mathrm|mathbf)\{([^}]*)\}/g, '$2');
+  t = RR.smooth(String(t || '').replace(/(\w)\(\[/g, '$1 ([')).replace(/\\(textbf|textit|emph|mathrm|mathbf)\{([^}]*)\}/g, '$2');
   const re = /\[([^\]]{1,200})\]\((https?:[^)\s]+)\)/g, clean = x => RR.tex(x, true).replace(/\*\*|__|\$/g, '').replace(/\\[a-zA-Z]+/g, '').replace(/\s{2,}/g, ' ');
   let out = '', vis = 0, last = 0, done = false, m;
   const text = x => { if (done) return; x = clean(x); if (vis + x.length > max) { x = x.slice(0, Math.max(0, max - vis)).replace(/\s+\S*$/, '') + '…'; done = true; } vis += x.length; out += esc(x); };
@@ -683,12 +683,14 @@ function onSettingsClick(e) {
 }
 
 // ---------------------------------------------------------------- wiring
-function setTab(t) { S.tab = t; document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t)); render(); }
+function setTab(t) { S.tab = t; document.querySelectorAll('#tabs button').forEach(b => { b.classList.toggle('on', b.dataset.tab === t); if (b.dataset.tab === t) b.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); }); render(); }
 function renderChips() {
   $('#domainChips').innerHTML = `<button class="chip ${!S.domain ? 'on' : ''}" data-dom="">All</button>` + Object.entries(D).map(([k, d]) => `<button class="chip ${S.domain === k ? 'on' : ''}" data-dom="${k}">${esc(d.label)}</button>`).join('');
 }
 function wire() {
   $('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.tab); });
+  const tb = $('#tabs'), endCheck = () => tb.classList.toggle('end', tb.scrollLeft + tb.clientWidth >= tb.scrollWidth - 4);
+  tb.addEventListener('scroll', endCheck, { passive: true }); endCheck();
   $('#domainChips').addEventListener('click', async e => {
     const b = e.target.closest('[data-dom]'); if (!b) return; S.domain = b.dataset.dom || null; renderChips(); render();
     if (S.domain && !S.byDomain[S.domain]) { status('fetching ' + D[S.domain].label + '…', 'busy'); try { await loadDomain(S.domain); refreshStatus(); } catch (er) { status('offline', 'off'); } if (!S.deck) render(); }
@@ -758,7 +760,11 @@ async function init() {
   await sync();
   if (m) { const it = findItem(decodeURIComponent(m[1])); if (it) openDeck(it, false); }
   deadlineBanner();
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => reg.update()).catch(() => {});
+    let reloaded = false;   // a new version took over → reload once so the new tabs/features appear immediately
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded && navigator.serviceWorker.controller) { reloaded = true; location.reload(); } });
+  }
 }
 init();
 })();

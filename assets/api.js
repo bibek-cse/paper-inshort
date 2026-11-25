@@ -61,6 +61,20 @@ RR.tex = (str, keepEdges) => {
   return keepEdges ? t : t.trim();
 };
 
+/* Fix glued text from PDFs/HTML so it reads naturally:
+   "work(Pinto et al., 2024)" → "work (Pinto et al., 2024)", "inputs.Left:" → "inputs. Left:", "(Li, 2023)shows" → "(Li, 2023) shows".
+   URLs and markdown links are never touched. */
+RR.smooth = str => {
+  let t = String(str || ''); if (!t) return t;
+  const keep = []; t = t.replace(/\[[^\]]{1,200}\]\(https?:[^)\s]+\)|https?:\/\/[^\s)\]]+/g, m => { keep.push(m); return '\u0004' + (keep.length - 1) + '\u0004'; });
+  t = t.replace(/([A-Za-z])\((?=\u0004|[A-Z][A-Za-z'’\-]+(?:\s+et al\.?|,|\s+and\s|\s*&)[^()]{0,80}\d{4}[a-z]?[);])/g, '$1 (')     // space before citation brackets
+       .replace(/(\d{4}[a-z]?\)|\u0004\d+\u0004\))(?=[A-Za-z])/g, '$1 ')                                                        // space after "(…, 2024)"
+       .replace(/([a-z%\)\]’”])([.!?;:])(?=[A-Z][a-z])/g, '$1$2 ')                                                              // "inputs.Left" → "inputs. Left"
+       .replace(/([a-z])(?=\((?:a|b|c|d|i|ii|iii)\)\s)/g, '$1 ')                                                                 // "shown(a) " → "shown (a) "
+       .replace(/ {2,}/g, ' ');
+  return t.replace(/\u0004(\d+)\u0004/g, (_, i) => keep[+i]);
+};
+
 // ------------------------------------------------------------------ safe helpers
 RR.safeUrl = u => { if (!u || typeof u !== 'string') return ''; try { const x = new URL(u, location.href); return /^https?:$/.test(x.protocol) ? x.href : ''; } catch (e) { return ''; } };
 
@@ -189,7 +203,7 @@ RR.normalizeWork = (w, domain) => {
     }
   }
   const auth = (w.authorships || []).map(a => a.author?.display_name).filter(Boolean);
-  const abstract = RR.tex(rebuildAbstract(w.abstract_inverted_index)), title = RR.tex((w.display_name || '').replace(/<[^>]+>/g, ''));
+  const abstract = RR.smooth(RR.tex(rebuildAbstract(w.abstract_inverted_index))), title = RR.tex((w.display_name || '').replace(/<[^>]+>/g, ''));
   const insts = [...new Set((w.authorships || []).flatMap(a => (a.institutions || []).map(i => i.display_name)).filter(Boolean))];
   return {
     id: 'oa:' + w.id.split('/').pop(), type: 'paper', src: 'OpenAlex',
@@ -241,7 +255,7 @@ RR.crossref = async (query, domain, { months = 8, rows = 80 } = {}) => {
   const j = await RR.json('https://api.crossref.org/works?' + p);
   const kw = RR.DOMAINS[domain]?.kw;
   return (j.message?.items || []).map(it => {
-    const title = RR.tex(stripTags((it.title || [])[0])), abstract = RR.tex(stripTags(it.abstract));
+    const title = RR.tex(stripTags((it.title || [])[0])), abstract = RR.smooth(RR.tex(stripTags(it.abstract)));
     const venue = (it['container-title'] || [])[0] || '', cls = RR.classifyVenue(venue);
     const dp = it.published?.['date-parts']?.[0] || [];
     const auth = (it.author || []).map(a => [a.given, a.family].filter(Boolean).join(' '));
@@ -290,7 +304,7 @@ RR.mixPreprints = (top, pre) => {
   if (!top.length) out.push(...pre.slice(0, 5));
   return out;
 };
-const ck = k => `t2:${k}:${RR.settings.quality}:${RR.settings.preprint}:${RR.campus.on ? 'c' : 'o'}`;
+const ck = k => `t3:${k}:${RR.settings.quality}:${RR.settings.preprint}:${RR.campus.on ? 'c' : 'o'}`;
 RR.domainPapers = async (domain, { force = false } = {}) => {
   const key = ck('dom:' + domain);
   if (!force) { const c = RR.cache.get(key, 1); if (c) return c; }
@@ -385,6 +399,13 @@ function parseMarkdown(md) {
   }
   return figs;
 }
+function mdText(el, base) {   // element text with its links preserved as [text](absolute-url)
+  const c = el.cloneNode(true);
+  c.querySelectorAll('a[href]').forEach(a => { let u = ''; try { u = new URL(a.getAttribute('href'), base).href; } catch (e) {} const tx = a.textContent.replace(/\s+/g, ' ').trim();
+    a.replaceWith(c.ownerDocument.createTextNode(u && tx && /^https?:/.test(u) ? `[${tx}](${u})` : tx)); });
+  c.querySelectorAll('math').forEach(m => m.replaceWith(c.ownerDocument.createTextNode(m.getAttribute('alttext') || m.textContent)));
+  return c.textContent.replace(/\s+/g, ' ').trim();
+}
 function parseHTML(html, id) {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const ver = (html.match(new RegExp(id.replace('.', '\\.') + '(v\\d+)')) || [])[1] || '';
@@ -394,11 +415,11 @@ function parseHTML(html, id) {
     const imgs = [...fg.querySelectorAll('img')].map(i => RR.safeUrl(new URL(i.getAttribute('src') || '', base).href)).filter(Boolean);
     const cap = fg.querySelector(':scope > figcaption') || fg.querySelector('figcaption');
     if (!imgs.length || !cap) return;
-    const t = cap.textContent.replace(/\s+/g, ' ').trim(), n = +(t.match(/(?:Figure|Fig\.)\s*(\d+)/i) || [])[1];
+    const t = mdText(cap, base), n = +(t.match(/(?:Figure|Fig\.)\s*(\d+)/i) || [])[1];
     if (!n || figs.some(f => f.n === n)) return;
     figs.push({ n, src: imgs[0], srcs: imgs.slice(0, 6), caption: t.replace(/^(Figure|Fig\.)\s*\d+\s*[:.]?\s*/i, '') });
   });
-  const text = [...doc.querySelectorAll('.ltx_para, h2, h3')].map(e => (e.tagName[0] === 'H' ? '# ' : '') + e.textContent).join('\n\n');
+  const text = [...doc.querySelectorAll('.ltx_para, h2, h3')].map(e => (e.tagName[0] === 'H' ? '# ' + e.textContent : mdText(e, base))).join('\n\n');
   return { figs, text };
 }
 // ---- tables, algorithms, conclusion, limitations from the full text
@@ -461,11 +482,11 @@ RR.mdCut = (s, n) => {
   return s.slice(0, cut).replace(/\s+\S*$/, '') + '…';
 };
 const protect = s => { const keep = []; return { s: s.replace(MDLINK, m => { keep.push(m); return '\u0001' + (keep.length - 1) + '\u0001'; }), back: t => t.replace(/\u0001(\d+)\u0001/g, (_, i) => keep[+i]) }; };
-RR.mdPlain = s => String(s || '').replace(/(\w)\(\[/g, '$1 ([').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/\*\*|__|\$/g, '');
+RR.mdPlain = s => RR.smooth(String(s || '')).replace(/(\w)\(\[/g, '$1 ([').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/\*\*|__|\$/g, '');
 const RES_RE = /(result|qualitative|visuali[sz]ation|comparison with|compared with|performance|ablation|heat ?map|localization result|detection result|examples of|samples)/i;
 RR.figures = async p => {
   const id = await RR.ensureArxiv(p).catch(() => ''); if (!id) return null;
-  const key = 'fig6:' + id; const c = RR.cache.get(key, 24 * 14); if (c !== undefined) return c;
+  const key = 'fig7:' + id; const c = RR.cache.get(key, 24 * 14); if (c !== undefined) return c;
   const h = RR.settings.jinaKey ? { headers: { Authorization: 'Bearer ' + RR.settings.jinaKey } } : {};
   // 1) arXiv native HTML (2024+)  2) ar5iv (older arXiv papers)  3) proxy fallback for either
   const tries = [
@@ -476,7 +497,7 @@ RR.figures = async p => {
   let got = null;
   for (const t of tries) { try { const r = await t(); if (r.figs.length) { got = r; break; } } catch (e) {} }
   if (!got) { RR.cache.set(key, null); return null; }
-  got.figs.forEach(f => { f.caption = RR.tex(f.caption); }); got.text = RR.tex(got.text);
+  got.figs.forEach(f => { f.caption = RR.smooth(RR.tex(f.caption)); }); got.text = RR.smooth(RR.tex(got.text));
   const figs = got.figs.slice(0, 12), arch = pickArch(figs);
   const results = figs.find(f => f !== arch && RES_RE.test(f.caption)) || null;
   const teaser = figs.find(f => f.n === 1 && f !== arch) || null;

@@ -5,7 +5,7 @@
  * via any medium, is prohibited without prior written permission. See LICENSE.
  */
 // ResearchReels service worker: app shell = stale-while-revalidate; never touches third-party API traffic.
-const C = 'rr-v17';
+const C = 'rr-v20';
 const SHELL = ['./', 'index.html', 'manifest.json', 'assets/style.css', 'assets/app.js', 'assets/api.js', 'assets/story.js', 'assets/venue.js', 'assets/venues.js',
   'assets/vendor/js-yaml.min.js', 'assets/icons/icon-192.png', 'data/feed.json', 'data/concepts.json', 'data/conferences.json', 'data/sota.json'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(C).then(c => c.addAll(SHELL))); self.skipWaiting(); });
@@ -13,9 +13,8 @@ self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Pr
 self.addEventListener('fetch', e => {
   const u = new URL(e.request.url);
   if (e.request.method !== 'GET' || u.origin !== location.origin) return;
-  e.respondWith(caches.open(C).then(async c => {
-    const hit = await c.match(e.request, { ignoreSearch: true });
-    const net = fetch(e.request).then(r => { if (r.ok) c.put(e.request, r.clone()); return r; }).catch(() => hit);
-    return hit || net;
-  }));
+  // Network first (always the newest version when online), cached copy only when offline
+  e.respondWith(fetch(e.request, { cache: 'no-cache' }).then(r => { if (r.ok) { const cp = r.clone(); caches.open(C).then(c => c.put(e.request, cp)); } return r; })
+    .catch(() => caches.match(e.request, { ignoreSearch: true }).then(r => r || caches.match('index.html'))));
 });
+self.addEventListener('message', e => { if (e.data === 'skipWaiting') self.skipWaiting(); });
