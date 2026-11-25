@@ -1,0 +1,753 @@
+{
+ "copyright": "© 2026 Bibek (bibek-cse). Curated content — all rights reserved.",
+ "items": [
+  {
+   "id": "idea-seed-1",
+   "type": "idea",
+   "domain": "deepfake",
+   "title": "Lip–voice phase consistency for audio-visual deepfakes",
+   "authors": "Seed idea — validate novelty before use",
+   "date": "2026-11-25",
+   "tags": [
+    "audio-visual",
+    "lip-sync",
+    "multimodal"
+   ],
+   "inshort": "Most AV deepfake detectors compare lips and audio at the content level. Check whether the timing (phase) of mouth openings and speech energy stay locked; many lip-sync generators drift by a few frames.",
+   "slides": [
+    {
+     "icon": "🕳️",
+     "title": "The gap",
+     "text": "Detectors often learn generator artifacts, not physical constraints that any fake must satisfy."
+    },
+    {
+     "icon": "🛠️",
+     "title": "Method sketch",
+     "flow": [
+      "Extract mouth-opening signal from landmarks",
+      "Extract speech envelope / phoneme onsets",
+      "Estimate cross-correlation and phase drift per window",
+      "Small temporal transformer on drift features",
+      "Fuse with a visual backbone"
+     ]
+    },
+    {
+     "icon": "🧪",
+     "title": "Experiments",
+     "points": [
+      "FakeAVCeleb, AV-Deepfake1M",
+      "Cross-generator test",
+      "AUC + localization of fake segments"
+     ]
+    },
+    {
+     "icon": "⚠️",
+     "title": "Risks",
+     "text": "Good lip-sync generators may already align phase; dubbed real videos could be false positives."
+    }
+   ]
+  },
+  {
+   "id": "idea-seed-2",
+   "type": "idea",
+   "domain": "signature",
+   "title": "Diffusion-forged signatures: a new threat to offline verification",
+   "authors": "Seed idea — validate novelty before use",
+   "date": "2026-11-25",
+   "tags": [
+    "signature verification",
+    "diffusion",
+    "forgery"
+   ],
+   "inshort": "Writer-conditioned diffusion models can produce skilled-looking signatures from a few samples. Build a benchmark of such forgeries and test whether current offline verifiers are fooled.",
+   "slides": [
+    {
+     "icon": "🕳️",
+     "title": "The gap",
+     "text": "Signature verification benchmarks mostly contain human skilled forgeries, not generative ones."
+    },
+    {
+     "icon": "🛠️",
+     "title": "Method sketch",
+     "flow": [
+      "Few-shot writer-conditioned diffusion generator",
+      "Generate forgeries per writer",
+      "Evaluate SOTA verifiers",
+      "Train a stroke-level artifact detector"
+     ]
+    },
+    {
+     "icon": "🧪",
+     "title": "Experiments",
+     "points": [
+      "CEDAR, GPDS-style datasets",
+      "EER under human vs. generated forgeries",
+      "Ablation: shots per writer"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "idea-seed-3",
+   "type": "idea",
+   "domain": "watermark",
+   "title": "Watermarks that survive regeneration attacks via semantic anchoring",
+   "authors": "Seed idea — validate novelty before use",
+   "date": "2026-11-25",
+   "tags": [
+    "watermarking",
+    "regeneration attack",
+    "robustness"
+   ],
+   "inshort": "Diffusion regeneration wipes pixel-level watermarks. Tie part of the message to semantic layout (object positions, coarse structure) that regeneration preserves, and decode it jointly with the pixel mark.",
+   "slides": [
+    {
+     "icon": "🕳️",
+     "title": "The gap",
+     "text": "Pixel watermarks are robust to classic edits but not to 'redraw the image' attacks."
+    },
+    {
+     "icon": "🛠️",
+     "title": "Method sketch",
+     "flow": [
+      "Pixel watermark (high capacity)",
+      "Semantic channel: tiny structured perturbation of layout features",
+      "Joint decoder with error-correcting code",
+      "Train against regeneration in the loop"
+     ]
+    },
+    {
+     "icon": "🧪",
+     "title": "Experiments",
+     "points": [
+      "Regeneration with SD/VAE attacks",
+      "Bit accuracy & TPR@1%FPR",
+      "Image quality: PSNR/LPIPS"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "arxiv-2411.07231",
+   "type": "paper",
+   "domain": "watermark",
+   "title": "Watermark Anything with Localized Messages",
+   "authors": "T. Sander, P. Fernandez, A. Durmus, T. Furon, M. Douze",
+   "date": "2024-11-11",
+   "venue": "ICLR 2025",
+   "url": "https://arxiv.org/abs/2411.07231",
+   "pdf": "https://arxiv.org/pdf/2411.07231",
+   "code": "https://github.com/facebookresearch/watermark-anything",
+   "tags": [
+    "watermarking",
+    "localization",
+    "multi-message",
+    "provenance"
+   ],
+   "inshort": "WAM treats watermarking as a segmentation problem: every pixel tells you whether it is watermarked and which message it carries. So it can find small watermarked regions inside an edited or spliced image and even read several different messages from one picture.",
+   "summary_by": "seed",
+   "slides": [
+    {
+     "icon": "❓",
+     "title": "Why do we need this?",
+     "text": "Classic watermarking hides one message in the whole image. Real images get cropped, spliced and inpainted, so a global decoder fails when only part of the image keeps the mark."
+    },
+    {
+     "icon": "🔑",
+     "title": "Key points",
+     "points": [
+      "Embedder hides a message imperceptibly; extractor predicts a per-pixel mask and per-pixel bits",
+      "Two-stage training: robustness first, then imperceptibility and multiple watermarks",
+      "Can localise watermarked areas and decode several distinct messages in one image"
+     ]
+    },
+    {
+     "icon": "✨",
+     "title": "What's new",
+     "text": "Re-framing watermark extraction as dense (pixel-level) prediction instead of a single global decode."
+    },
+    {
+     "icon": "🏗️",
+     "title": "Architecture",
+     "flow": [
+      "Image + message",
+      "Embedder adds a near-invisible residual",
+      "Edits / crops / splicing applied",
+      "Extractor (ViT-style) → per-pixel 'is marked?' mask",
+      "Per-pixel bit predictions → cluster → messages"
+     ]
+    },
+    {
+     "icon": "📊",
+     "title": "Main results",
+     "points": [
+      "Competitive robustness with prior methods on standard image edits",
+      "Locates watermarked regions even when they cover a small part of the image",
+      "Recovers multiple separate messages from one image"
+     ]
+    },
+    {
+     "icon": "⚠️",
+     "title": "Limitations",
+     "text": "Very aggressive generative edits that redraw the region can still remove the mark; payload per region is small."
+    },
+    {
+     "icon": "🧒",
+     "title": "Explain like I'm new",
+     "text": "Imagine stamping tiny invisible ink dots everywhere on a photo. If someone cuts out a piece, you can still scan each piece and say 'this bit is mine, and it says hello'."
+    }
+   ],
+   "arxiv": "2411.07231",
+   "venueShort": "ICLR",
+   "tier": "A*",
+   "year": "2025",
+   "firstAuthor": "Sander",
+   "classic": true
+  },
+  {
+   "id": "arxiv-2401.17264",
+   "type": "paper",
+   "domain": "voice",
+   "title": "Proactive Detection of Voice Cloning with Localized Watermarking (AudioSeal)",
+   "authors": "R. San Roman, P. Fernandez, A. Défossez, T. Furon, T. Tran, H. Elsahar",
+   "date": "2024-01-30",
+   "venue": "ICML 2024",
+   "url": "https://arxiv.org/abs/2401.17264",
+   "pdf": "https://arxiv.org/pdf/2401.17264",
+   "code": "https://github.com/facebookresearch/audioseal",
+   "tags": [
+    "audio watermarking",
+    "voice cloning",
+    "speech deepfake",
+    "localization"
+   ],
+   "inshort": "AudioSeal marks AI-generated speech at the moment it is created, then a detector finds that mark sample-by-sample. This turns voice-clone detection from guessing artifacts into checking a hidden signature, and it is fast enough for large-scale use.",
+   "summary_by": "seed",
+   "slides": [
+    {
+     "icon": "❓",
+     "title": "Why do we need this?",
+     "text": "Passive audio-deepfake detectors chase artifacts that vanish as generators improve. A proactive mark added at generation time gives a reliable signal."
+    },
+    {
+     "icon": "🔑",
+     "title": "Key points",
+     "points": [
+      "Generator adds an imperceptible watermark to speech",
+      "Detector outputs a per-sample probability of being watermarked",
+      "Localized: finds watermarked segments in longer audio",
+      "Optional multi-bit message to identify the model version"
+     ]
+    },
+    {
+     "icon": "✨",
+     "title": "What's new",
+     "text": "Sample-level localized detection with a perceptual loudness loss, trained jointly with a detector, designed for speed."
+    },
+    {
+     "icon": "🏗️",
+     "title": "Architecture",
+     "flow": [
+      "Speech waveform",
+      "Generator (encoder–decoder) → watermark signal",
+      "Add to audio (loudness-aware)",
+      "Audio edits: compression, filtering, noise",
+      "Detector → per-sample score + optional bits"
+     ]
+    },
+    {
+     "icon": "📊",
+     "title": "Main results",
+     "points": [
+      "Robust to many common audio edits",
+      "Detection is much faster than earlier audio watermark decoders",
+      "Localization works on short marked segments"
+     ]
+    },
+    {
+     "icon": "⚠️",
+     "title": "Limitations",
+     "text": "Only protects audio from generators that choose to embed the mark; adaptive removal attacks remain an open risk."
+    },
+    {
+     "icon": "🧒",
+     "title": "Explain like I'm new",
+     "text": "It's like a radio station adding an ultrasonic 'beep' only machines can hear — later, any clip can be checked for the beep, second by second."
+    }
+   ],
+   "arxiv": "2401.17264",
+   "venueShort": "ICML",
+   "tier": "A*",
+   "year": "2024",
+   "firstAuthor": "Roman",
+   "classic": true
+  },
+  {
+   "id": "arxiv-2303.15435",
+   "type": "paper",
+   "domain": "watermark",
+   "title": "The Stable Signature: Rooting Watermarks in Latent Diffusion Models",
+   "authors": "P. Fernandez, G. Couairon, H. Jégou, M. Douze, T. Furon",
+   "date": "2023-03-27",
+   "venue": "ICCV 2023",
+   "url": "https://arxiv.org/abs/2303.15435",
+   "pdf": "https://arxiv.org/pdf/2303.15435",
+   "code": "https://github.com/facebookresearch/stable_signature",
+   "tags": [
+    "diffusion",
+    "watermarking",
+    "generative ai",
+    "attribution"
+   ],
+   "inshort": "Instead of watermarking images after generation, Stable Signature fine-tunes the diffusion model's latent decoder so every image it produces already carries a hidden signature. Each user can get a differently fine-tuned decoder, enabling attribution.",
+   "summary_by": "seed",
+   "slides": [
+    {
+     "icon": "❓",
+     "title": "Why do we need this?",
+     "text": "Post-hoc watermarks on open-source generators are easy to skip — just delete the watermark line of code. The mark needs to live inside the model weights."
+    },
+    {
+     "icon": "🔑",
+     "title": "Key points",
+     "points": [
+      "Pre-train a watermark extractor (HiDDeN-style)",
+      "Fine-tune only the VAE decoder so outputs decode to a fixed message",
+      "Different users can get different decoders",
+      "Detection by statistical test on extracted bits"
+     ]
+    },
+    {
+     "icon": "✨",
+     "title": "What's new",
+     "text": "Merging the watermark into the generator's decoder weights, making generation and marking inseparable."
+    },
+    {
+     "icon": "🏗️",
+     "title": "Architecture",
+     "flow": [
+      "Text prompt → diffusion in latent space",
+      "Fine-tuned latent decoder",
+      "Image with built-in signature",
+      "Extractor network → bits",
+      "Hypothesis test → 'generated by model k?'"
+     ]
+    },
+    {
+     "icon": "📊",
+     "title": "Main results",
+     "points": [
+      "Mark survives common edits such as crops and compression",
+      "Image quality stays close to the original model",
+      "Supports detection and user identification"
+     ]
+    },
+    {
+     "icon": "⚠️",
+     "title": "Limitations",
+     "text": "Strong regeneration/purification attacks and model fine-tuning can weaken the mark."
+    },
+    {
+     "icon": "🧒",
+     "title": "Explain like I'm new",
+     "text": "Rather than signing each painting after it's done, you change the painter's brush so every stroke secretly contains the signature."
+    }
+   ],
+   "arxiv": "2303.15435",
+   "venueShort": "ICCV",
+   "tier": "A*",
+   "year": "2023",
+   "firstAuthor": "Fernandez",
+   "classic": true
+  },
+  {
+   "id": "arxiv-2212.10957",
+   "type": "paper",
+   "domain": "forensics",
+   "title": "TruFor: Leveraging All-Round Clues for Trustworthy Image Forgery Detection and Localization",
+   "authors": "F. Guillaro, D. Cozzolino, A. Sud, N. Dufour, L. Verdoliva",
+   "date": "2022-12-21",
+   "venue": "CVPR 2023",
+   "url": "https://arxiv.org/abs/2212.10957",
+   "pdf": "https://arxiv.org/pdf/2212.10957",
+   "code": "https://github.com/grip-unina/TruFor",
+   "tags": [
+    "forgery localization",
+    "noiseprint++",
+    "reliability map",
+    "image forensics"
+   ],
+   "inshort": "TruFor combines the RGB image with a learned camera-noise fingerprint (Noiseprint++) to detect and localize forgeries, and it also outputs a confidence map so you know where its decision can be trusted, reducing false alarms.",
+   "summary_by": "seed",
+   "slides": [
+    {
+     "icon": "❓",
+     "title": "Why do we need this?",
+     "text": "Forgery detectors often fire on harmless regions and give no sense of how reliable their localization is."
+    },
+    {
+     "icon": "🔑",
+     "title": "Key points",
+     "points": [
+      "Noiseprint++: self-supervised noise fingerprint robust to compression",
+      "Transformer-based fusion of RGB + noise features",
+      "Outputs anomaly map, confidence map and global integrity score"
+     ]
+    },
+    {
+     "icon": "✨",
+     "title": "What's new",
+     "text": "A reliability (confidence) map learned jointly with localization, plus an improved Noiseprint++ extractor."
+    },
+    {
+     "icon": "🏗️",
+     "title": "Architecture",
+     "flow": [
+      "Image",
+      "RGB stream + Noiseprint++ stream",
+      "Transformer fusion encoder",
+      "Anomaly decoder → localization map",
+      "Confidence decoder → reliability map",
+      "Pooling → integrity score"
+     ]
+    },
+    {
+     "icon": "📊",
+     "title": "Main results",
+     "points": [
+      "Strong localization and detection across many forgery benchmarks",
+      "Handles cheap-fakes and AI-based manipulations",
+      "Confidence map lowers false positives"
+     ]
+    },
+    {
+     "icon": "⚠️",
+     "title": "Limitations",
+     "text": "Heavy post-processing and fully generated images remain harder; noise cues weaken after strong recompression."
+    },
+    {
+     "icon": "🧒",
+     "title": "Explain like I'm new",
+     "text": "It looks at both the picture and the camera's invisible 'fingerprint grain'. Where the grain pattern breaks, something was pasted — and it tells you how sure it is."
+    }
+   ],
+   "arxiv": "2212.10957",
+   "venueShort": "CVPR",
+   "tier": "A*",
+   "year": "2023",
+   "firstAuthor": "Guillaro",
+   "classic": true
+  },
+  {
+   "id": "arxiv-2302.10174",
+   "type": "paper",
+   "domain": "deepfake",
+   "title": "Towards Universal Fake Image Detectors that Generalize Across Generative Models",
+   "authors": "U. Ojha, Y. Li, Y. J. Lee",
+   "date": "2023-02-20",
+   "venue": "CVPR 2023",
+   "url": "https://arxiv.org/abs/2302.10174",
+   "pdf": "https://arxiv.org/pdf/2302.10174",
+   "code": "https://github.com/WisconsinAIVision/UniversalFakeDetect",
+   "tags": [
+    "generalization",
+    "clip",
+    "ai-generated images",
+    "linear probe"
+   ],
+   "inshort": "Detectors trained on GAN fakes fail on diffusion fakes. This paper skips learning a fake-detector from scratch and uses frozen CLIP features with a tiny classifier (nearest neighbour or linear probe), which generalizes far better to unseen generators.",
+   "summary_by": "seed",
+   "slides": [
+    {
+     "icon": "❓",
+     "title": "Why do we need this?",
+     "text": "A real-vs-fake classifier trained end-to-end learns artifacts of its training generator and treats everything else as 'real'."
+    },
+    {
+     "icon": "🔑",
+     "title": "Key points",
+     "points": [
+      "Use a frozen large pretrained feature space (CLIP ViT)",
+      "Train only a linear probe or use nearest neighbour",
+      "Test on many unseen generator families"
+     ]
+    },
+    {
+     "icon": "✨",
+     "title": "What's new",
+     "text": "Showing that a feature space not trained for fake detection generalizes better than one that is."
+    },
+    {
+     "icon": "🏗️",
+     "title": "Architecture",
+     "flow": [
+      "Image",
+      "Frozen CLIP ViT image encoder",
+      "Feature vector",
+      "Linear probe / k-NN",
+      "Real or fake"
+     ]
+    },
+    {
+     "icon": "📊",
+     "title": "Main results",
+     "points": [
+      "Large gains on unseen generators vs. trained-from-scratch detectors",
+      "Works with very simple classifiers",
+      "Became a standard baseline (UnivFD)"
+     ]
+    },
+    {
+     "icon": "⚠️",
+     "title": "Limitations",
+     "text": "Can be sensitive to post-processing; newer generators keep testing its limits."
+    },
+    {
+     "icon": "🧒",
+     "title": "Explain like I'm new",
+     "text": "Instead of memorising one forger's mistakes, ask a well-travelled expert (CLIP) who has seen millions of real photos to tell you what looks 'off'."
+    }
+   ],
+   "arxiv": "2302.10174",
+   "venueShort": "CVPR",
+   "tier": "A*",
+   "year": "2023",
+   "firstAuthor": "Ojha",
+   "classic": true
+  },
+  {
+   "id": "arxiv-1901.08971",
+   "type": "paper",
+   "domain": "deepfake",
+   "title": "FaceForensics++: Learning to Detect Manipulated Facial Images",
+   "authors": "A. Rössler, D. Cozzolino, L. Verdoliva, C. Riess, J. Thies, M. Nießner",
+   "date": "2019-01-25",
+   "venue": "ICCV 2019",
+   "url": "https://arxiv.org/abs/1901.08971",
+   "pdf": "https://arxiv.org/pdf/1901.08971",
+   "code": "https://github.com/ondyari/FaceForensics",
+   "tags": [
+    "benchmark",
+    "face manipulation",
+    "xceptionnet",
+    "dataset"
+   ],
+   "inshort": "FaceForensics++ is the benchmark that kick-started deepfake detection: videos manipulated with four methods at several compression levels, plus a hidden test benchmark. It showed that learned detectors beat humans, especially on compressed video.",
+   "summary_by": "seed",
+   "slides": [
+    {
+     "icon": "❓",
+     "title": "Why do we need this?",
+     "text": "Without a large shared dataset, detection results were not comparable and could not train deep models."
+    },
+    {
+     "icon": "🔑",
+     "title": "Key points",
+     "points": [
+      "Four manipulations: Deepfakes, Face2Face, FaceSwap, NeuralTextures",
+      "Raw, high-quality and low-quality compression levels",
+      "Human study vs. learned detectors",
+      "Hidden-label benchmark for fair comparison"
+     ]
+    },
+    {
+     "icon": "✨",
+     "title": "What's new",
+     "text": "A large-scale, multi-method, multi-compression benchmark with standardized evaluation."
+    },
+    {
+     "icon": "🏗️",
+     "title": "Architecture",
+     "flow": [
+      "Source videos",
+      "4 manipulation methods",
+      "Compression levels",
+      "Face tracking & crop",
+      "CNN detectors (e.g. XceptionNet)"
+     ]
+    },
+    {
+     "icon": "📊",
+     "title": "Main results",
+     "points": [
+      "Learned detectors clearly outperform human observers",
+      "Accuracy drops a lot under heavy compression",
+      "Domain-specific face crops help"
+     ]
+    },
+    {
+     "icon": "⚠️",
+     "title": "Limitations",
+     "text": "Older manipulation methods; models trained only on FF++ generalize poorly to new deepfakes."
+    },
+    {
+     "icon": "🧒",
+     "title": "Explain like I'm new",
+     "text": "Like building a big exam with answer keys so every lie-detector can be tested on the same questions."
+    }
+   ],
+   "arxiv": "1901.08971",
+   "venueShort": "ICCV",
+   "tier": "A*",
+   "year": "2019",
+   "firstAuthor": "Rössler",
+   "classic": true
+  },
+  {
+   "id": "arxiv-1801.07698",
+   "type": "paper",
+   "domain": "face",
+   "title": "ArcFace: Additive Angular Margin Loss for Deep Face Recognition",
+   "authors": "J. Deng, J. Guo, N. Xue, S. Zafeiriou",
+   "date": "2018-01-23",
+   "venue": "CVPR 2019",
+   "url": "https://arxiv.org/abs/1801.07698",
+   "pdf": "https://arxiv.org/pdf/1801.07698",
+   "code": "https://github.com/deepinsight/insightface",
+   "tags": [
+    "face recognition",
+    "metric learning",
+    "margin loss",
+    "embedding"
+   ],
+   "inshort": "ArcFace adds a fixed angular margin to the softmax loss so face embeddings of the same person cluster tightly on a hypersphere while different people are pushed apart. Simple to implement, it became the default loss for face recognition.",
+   "summary_by": "seed",
+   "slides": [
+    {
+     "icon": "❓",
+     "title": "Why do we need this?",
+     "text": "Plain softmax separates classes but doesn't make embeddings compact enough for open-set face verification."
+    },
+    {
+     "icon": "🔑",
+     "title": "Key points",
+     "points": [
+      "Normalize features and class weights → cosine similarity",
+      "Add margin m to the angle of the true class",
+      "Scale by s before softmax",
+      "Clear geometric meaning on the hypersphere"
+     ]
+    },
+    {
+     "icon": "✨",
+     "title": "What's new",
+     "text": "An additive angular margin, cos(θ + m), which has a constant geodesic-distance interpretation."
+    },
+    {
+     "icon": "🏗️",
+     "title": "Architecture",
+     "flow": [
+      "Face crop",
+      "CNN backbone (e.g. ResNet)",
+      "L2-normalized embedding",
+      "cos(θ_y + m) for true class",
+      "Scaled softmax loss"
+     ]
+    },
+    {
+     "icon": "📊",
+     "title": "Main results",
+     "points": [
+      "Strong results across major face verification benchmarks",
+      "Stable training, little overhead",
+      "Widely adopted via InsightFace"
+     ]
+    },
+    {
+     "icon": "⚠️",
+     "title": "Limitations",
+     "text": "Sensitive to label noise; margin and scale need tuning."
+    },
+    {
+     "icon": "🧒",
+     "title": "Explain like I'm new",
+     "text": "Faces are points on a ball. ArcFace insists each person's points stay in their own slice of the ball with an extra 'buffer zone' between neighbours."
+    }
+   ],
+   "arxiv": "1801.07698",
+   "venueShort": "CVPR",
+   "tier": "A*",
+   "year": "2019",
+   "firstAuthor": "Deng",
+   "classic": true
+  },
+  {
+   "id": "arxiv-2110.01200",
+   "type": "paper",
+   "domain": "voice",
+   "title": "AASIST: Audio Anti-Spoofing using Integrated Spectro-Temporal Graph Attention Networks",
+   "authors": "J.-w. Jung, H.-S. Heo, H. Tak, H.-j. Shim, J. S. Chung, B.-J. Lee, H.-J. Yu, N. Evans",
+   "date": "2021-10-04",
+   "venue": "ICASSP 2022",
+   "url": "https://arxiv.org/abs/2110.01200",
+   "pdf": "https://arxiv.org/pdf/2110.01200",
+   "code": "https://github.com/clovaai/aasist",
+   "tags": [
+    "anti-spoofing",
+    "graph attention",
+    "asvspoof",
+    "speech deepfake"
+   ],
+   "inshort": "AASIST detects spoofed (synthetic or converted) speech from the raw waveform by modelling spectral and temporal artifacts as two graphs and fusing them with a heterogeneous graph attention layer. It is compact and became a go-to baseline for audio deepfake detection.",
+   "summary_by": "seed",
+   "slides": [
+    {
+     "icon": "❓",
+     "title": "Why do we need this?",
+     "text": "Spoofing artifacts can hide in specific frequency bands or time segments; separate models for each are clumsy."
+    },
+    {
+     "icon": "🔑",
+     "title": "Key points",
+     "points": [
+      "Raw-waveform front-end (RawNet2-style sinc filters)",
+      "Spectral graph + temporal graph",
+      "Heterogeneous stacking graph attention",
+      "Max graph operation for competing branches"
+     ]
+    },
+    {
+     "icon": "✨",
+     "title": "What's new",
+     "text": "A single model that integrates spectral and temporal graphs through heterogeneous graph attention."
+    },
+    {
+     "icon": "🏗️",
+     "title": "Architecture",
+     "flow": [
+      "Raw audio",
+      "Sinc-conv encoder → feature map",
+      "Spectral graph & temporal graph",
+      "HS-GAL fusion",
+      "Readout → bona fide / spoof"
+     ]
+    },
+    {
+     "icon": "📊",
+     "title": "Main results",
+     "points": [
+      "Strong results on ASVspoof 2019 LA",
+      "Lightweight variant (AASIST-L) stays competitive",
+      "Common baseline in later challenges"
+     ]
+    },
+    {
+     "icon": "⚠️",
+     "title": "Limitations",
+     "text": "Trained on ASVspoof-style attacks; generalization to new TTS/VC systems and codecs needs extra data."
+    },
+    {
+     "icon": "🧒",
+     "title": "Explain like I'm new",
+     "text": "It listens to the voice twice — once as 'which pitches look weird' and once as 'which moments sound weird' — then lets the two notes talk to each other."
+    }
+   ],
+   "arxiv": "2110.01200",
+   "venueShort": "ICASSP",
+   "tier": "B",
+   "year": "2022",
+   "firstAuthor": "Jung",
+   "classic": true
+  }
+ ]
+}

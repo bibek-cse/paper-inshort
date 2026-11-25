@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<!-- ResearchReels · Copyright (c) 2026 Bibek (GitHub: bibek-cse). All rights reserved. See LICENSE. -->
+<html lang="en" data-theme="midnight">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ResearchReels — top-venue papers in 60 seconds</title>
+<meta name="description" content="Live, Inshorts-style reels of A*/A/B and IEEE/ACM Transactions papers on deepfakes, biometrics, watermarking and computer vision, with original architecture figures.">
+<meta name="theme-color" content="#0d0f14">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data: blob:; connect-src 'self' https:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; worker-src 'self'; manifest-src 'self'">
+<meta name="referrer" content="no-referrer">
+<meta name="author" content="Bibek (bibek-cse)">
+<meta name="copyright" content="© 2026 Bibek (bibek-cse). All rights reserved.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Reels">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo">◐</span> Research<b>Reels</b></div>
+  <div class="status" id="status"><i class="dot"></i><span id="statusText">connecting…</span></div>
+  <div class="top-actions">
+    <button class="icon-btn hidden" id="btnInstall" aria-label="Install app">⤓</button>
+    <button class="icon-btn" id="btnRefresh" aria-label="Refresh">⟳</button>
+    <button class="icon-btn" id="btnSearch" aria-label="Search">⌕</button>
+    <button class="icon-btn" id="btnSettings" aria-label="Settings">⚙</button>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button data-tab="foryou" class="on">For You</button>
+    <button data-tab="paper">Papers</button>
+    <button data-tab="idea">Ideas</button>
+    <button data-tab="concept">Concepts</button>
+    <button data-tab="sota">SOTA</button>
+    <button data-tab="venue">Venues</button>
+    <button data-tab="deadline">Deadlines</button>
+    <button data-tab="saved">Saved</button>
+  </nav>
+  <div class="chips" id="domainChips"></div>
+</header>
+
+<div id="banner" class="banner hidden"></div>
+<main id="feed" class="feed" aria-live="polite"></main>
+
+<section id="deck" class="deck hidden" aria-modal="true" role="dialog">
+  <div class="deck-progress" id="deckProgress"></div>
+  <div class="deck-head">
+    <span id="deckDomain" class="pill"></span>
+    <span class="deck-tools"><button class="ask-btn" id="deckAsk" aria-label="Ask AI about this paper">✦ Ask AI</button><button class="icon-btn" id="deckClose" aria-label="Close">✕</button></span>
+  </div>
+  <div class="deck-stage" id="deckStage"></div>
+  <div class="deck-nav">
+    <button id="deckPrev" aria-label="Previous slide">‹</button>
+    <span id="deckCount"></span>
+    <button id="deckNext" aria-label="Next slide">›</button>
+  </div>
+</section>
+
+<div id="zoom" class="zoom hidden" role="dialog" aria-label="Figure viewer">
+  <div class="lb-top"><span class="lb-count"></span><span class="lb-tools"><button data-lb="out" aria-label="Zoom out">−</button><button data-lb="in" aria-label="Zoom in">+</button><button data-lb="close" aria-label="Close">✕</button></span></div>
+  <div class="lb-stage"><img alt="" referrerpolicy="no-referrer"></div>
+  <button class="lb-nav lb-prev" data-lb="prev" aria-label="Previous figure">‹</button><button class="lb-nav lb-next" data-lb="next" aria-label="Next figure">›</button>
+  <div class="lb-bottom"><div class="lb-dots"></div><p class="lb-cap"></p><a class="lb-src cite" target="_blank" rel="noopener noreferrer"></a></div>
+</div>
+
+<section id="venueSheet" class="sheet hidden" aria-label="Venue details"><div class="sheet-card" id="venueBody"></div></section>
+
+<section id="askSheet" class="sheet hidden" aria-label="Ask an AI about this paper">
+  <div class="sheet-card" id="askBody"></div>
+</section>
+
+<section id="searchSheet" class="sheet hidden">
+  <div class="sheet-card">
+    <div class="sheet-head"><h3>Search top-venue papers</h3><button class="icon-btn" data-close>✕</button></div>
+    <form id="searchForm"><input id="searchInput" maxlength="200" placeholder="e.g. lip-sync deepfake, signature forgery…" autocomplete="off"><button>Go</button></form>
+    <p class="hint">Live from OpenAlex, filtered to your venue-quality setting. Searches also tune <b>For You</b>.</p>
+    <div id="searchResults" class="mini-list"></div>
+  </div>
+</section>
+
+<section id="settingsSheet" class="sheet hidden">
+  <div class="sheet-card" id="settingsBody"></div>
+</section>
+
+<div id="toast" class="toast"></div>
+<div id="copyGuard" class="copy-guard hidden"></div>
+<script src="assets/vendor/js-yaml.min.js"></script>
+<script src="assets/venues.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/story.js"></script>
+<script src="assets/venue.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

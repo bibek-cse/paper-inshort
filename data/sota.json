@@ -1,0 +1,474 @@
+{
+ "copyright": "© 2026 Bibek (bibek-cse). Curated content — all rights reserved.",
+ "note": "Curated reference models per domain (no scores — check each paper's tables). The app adds a live 'Rising now' list from current top-venue papers.",
+ "domains": [
+  {
+   "domain": "deepfake",
+   "benchmarks": [
+    "FaceForensics++",
+    "Celeb-DF",
+    "DFDC",
+    "DeepfakeBench (NeurIPS'23 D&B)",
+    "GenImage"
+   ],
+   "models": [
+    {
+     "model": "Xception baseline",
+     "venue": "ICCV",
+     "year": 2019,
+     "idea": "CNN trained on FF++ face crops; the standard reference",
+     "code": ""
+    },
+    {
+     "model": "Face X-ray",
+     "venue": "CVPR",
+     "year": 2020,
+     "idea": "Detects the blending boundary left by face swapping",
+     "code": ""
+    },
+    {
+     "model": "Self-Blended Images (SBI)",
+     "venue": "CVPR",
+     "year": 2022,
+     "idea": "Trains on self-blended real faces → strong cross-dataset generalisation",
+     "code": "https://github.com/mapooon/SelfBlendedImages"
+    },
+    {
+     "model": "UnivFD",
+     "venue": "CVPR",
+     "year": 2023,
+     "idea": "Frozen CLIP features + linear probe generalise to unseen generators",
+     "code": "https://github.com/WisconsinAIVision/UniversalFakeDetect"
+    },
+    {
+     "model": "DIRE",
+     "venue": "ICCV",
+     "year": 2023,
+     "idea": "Diffusion reconstruction error separates generated from real images",
+     "code": "https://github.com/ZhendongWang6/DIRE"
+    },
+    {
+     "model": "NPR",
+     "venue": "CVPR",
+     "year": 2024,
+     "idea": "Neighbouring-pixel relations expose up-sampling artifacts",
+     "code": ""
+    },
+    {
+     "model": "LAA-Net",
+     "venue": "CVPR",
+     "year": 2024,
+     "idea": "Localized artifact attention for high-quality deepfakes",
+     "code": ""
+    },
+    {
+     "model": "DRCT",
+     "venue": "ICML",
+     "year": 2024,
+     "idea": "Diffusion reconstruction contrastive training for generated-image detection",
+     "code": ""
+    },
+    {
+     "model": "AIDE",
+     "venue": "ICLR",
+     "year": 2025,
+     "idea": "Mixes semantic and low-level expert features for AI-generated image detection",
+     "code": ""
+    }
+   ]
+  },
+  {
+   "domain": "forensics",
+   "benchmarks": [
+    "CASIA v1/v2",
+    "Columbia",
+    "Coverage",
+    "NIST16",
+    "IMD2020",
+    "DocTamper"
+   ],
+   "models": [
+    {
+     "model": "ManTra-Net",
+     "venue": "CVPR",
+     "year": 2019,
+     "idea": "Learns manipulation traces as local anomalies",
+     "code": ""
+    },
+    {
+     "model": "MVSS-Net",
+     "venue": "ICCV",
+     "year": 2021,
+     "idea": "Multi-view (edge + noise) multi-scale supervision",
+     "code": "https://github.com/dong03/MVSS-Net"
+    },
+    {
+     "model": "PSCC-Net",
+     "venue": "TCSVT",
+     "year": 2022,
+     "idea": "Progressive spatio-channel correlation, coarse-to-fine masks",
+     "code": "https://github.com/proteus1991/PSCC-Net"
+    },
+    {
+     "model": "CAT-Net v2",
+     "venue": "IJCV",
+     "year": 2022,
+     "idea": "Uses JPEG compression artifacts (DCT stream) for splicing",
+     "code": "https://github.com/mjkwon2021/CAT-Net"
+    },
+    {
+     "model": "HiFi-Net",
+     "venue": "CVPR",
+     "year": 2023,
+     "idea": "Hierarchical fine-grained attribution + localization",
+     "code": ""
+    },
+    {
+     "model": "TruFor",
+     "venue": "CVPR",
+     "year": 2023,
+     "idea": "RGB + Noiseprint++ fusion with a reliability map",
+     "code": "https://github.com/grip-unina/TruFor"
+    }
+   ]
+  },
+  {
+   "domain": "watermark",
+   "benchmarks": [
+    "COCO / DiffusionDB images",
+    "WAVES (ICML'24)",
+    "Attack suites: JPEG, crop, regeneration"
+   ],
+   "models": [
+    {
+     "model": "HiDDeN",
+     "venue": "ECCV",
+     "year": 2018,
+     "idea": "End-to-end encoder–noise–decoder watermarking",
+     "code": ""
+    },
+    {
+     "model": "StegaStamp",
+     "venue": "CVPR",
+     "year": 2020,
+     "idea": "Hyperlinks hidden in printed photos, robust to camera capture",
+     "code": "https://github.com/tancik/StegaStamp"
+    },
+    {
+     "model": "MBRS",
+     "venue": "ACM MM",
+     "year": 2021,
+     "idea": "Mini-batch of real and simulated JPEG for robustness",
+     "code": "https://github.com/jzyustc/MBRS"
+    },
+    {
+     "model": "Stable Signature",
+     "venue": "ICCV",
+     "year": 2023,
+     "idea": "Watermark rooted in the latent decoder of a diffusion model",
+     "code": "https://github.com/facebookresearch/stable_signature"
+    },
+    {
+     "model": "Tree-Ring",
+     "venue": "NeurIPS",
+     "year": 2023,
+     "idea": "Pattern in the initial noise's Fourier space, detected by inversion",
+     "code": "https://github.com/YuxinWenRick/tree-ring-watermark"
+    },
+    {
+     "model": "Gaussian Shading",
+     "venue": "CVPR",
+     "year": 2024,
+     "idea": "Performance-lossless watermark in the sampled latent",
+     "code": "https://github.com/bsmhmmlf/Gaussian-Shading"
+    },
+    {
+     "model": "Watermark Anything (WAM)",
+     "venue": "ICLR",
+     "year": 2025,
+     "idea": "Per-pixel localized, multi-message watermarking",
+     "code": "https://github.com/facebookresearch/watermark-anything"
+    }
+   ]
+  },
+  {
+   "domain": "voice",
+   "benchmarks": [
+    "ASVspoof 2019 LA",
+    "ASVspoof 2021 LA/DF",
+    "ASVspoof 5",
+    "In-the-Wild",
+    "VoxCeleb1-O (SV)"
+   ],
+   "models": [
+    {
+     "model": "RawNet2 CM",
+     "venue": "ICASSP",
+     "year": 2021,
+     "idea": "End-to-end anti-spoofing from raw waveform",
+     "code": ""
+    },
+    {
+     "model": "AASIST",
+     "venue": "ICASSP",
+     "year": 2022,
+     "idea": "Spectro-temporal graph attention",
+     "code": "https://github.com/clovaai/aasist"
+    },
+    {
+     "model": "wav2vec 2.0 + AASIST",
+     "venue": "Odyssey",
+     "year": 2022,
+     "idea": "Self-supervised front-end + data augmentation",
+     "code": "https://github.com/TakHemlata/SSL_Anti-spoofing"
+    },
+    {
+     "model": "XLS-R + SLS",
+     "venue": "ACM MM",
+     "year": 2024,
+     "idea": "Layer-wise sensitive feature selection from XLS-R",
+     "code": ""
+    },
+    {
+     "model": "AudioSeal (proactive)",
+     "venue": "ICML",
+     "year": 2024,
+     "idea": "Localized audio watermark for cloned voices",
+     "code": "https://github.com/facebookresearch/audioseal"
+    },
+    {
+     "model": "ECAPA-TDNN (SV)",
+     "venue": "Interspeech",
+     "year": 2020,
+     "idea": "Channel attention + aggregation for speaker embeddings",
+     "code": "https://github.com/speechbrain/speechbrain"
+    },
+    {
+     "model": "CAM++ (SV)",
+     "venue": "Interspeech",
+     "year": 2023,
+     "idea": "Context-aware masking, efficient speaker verification",
+     "code": "https://github.com/modelscope/3D-Speaker"
+    },
+    {
+     "model": "WavLM",
+     "venue": "IEEE JSTSP",
+     "year": 2022,
+     "idea": "Self-supervised speech model; strong SV front-end",
+     "code": ""
+    }
+   ]
+  },
+  {
+   "domain": "face",
+   "benchmarks": [
+    "LFW",
+    "CFP-FP",
+    "AgeDB",
+    "IJB-B / IJB-C",
+    "MegaFace"
+   ],
+   "models": [
+    {
+     "model": "CosFace",
+     "venue": "CVPR",
+     "year": 2018,
+     "idea": "Large-margin cosine loss",
+     "code": ""
+    },
+    {
+     "model": "ArcFace",
+     "venue": "CVPR",
+     "year": 2019,
+     "idea": "Additive angular margin loss",
+     "code": "https://github.com/deepinsight/insightface"
+    },
+    {
+     "model": "MagFace",
+     "venue": "CVPR",
+     "year": 2021,
+     "idea": "Feature magnitude encodes face quality",
+     "code": "https://github.com/IrvingMeng/MagFace"
+    },
+    {
+     "model": "AdaFace",
+     "venue": "CVPR",
+     "year": 2022,
+     "idea": "Quality-adaptive margin",
+     "code": "https://github.com/mk-minchul/AdaFace"
+    },
+    {
+     "model": "TopoFR",
+     "venue": "NeurIPS",
+     "year": 2024,
+     "idea": "Topology alignment of embedding space",
+     "code": ""
+    }
+   ]
+  },
+  {
+   "domain": "biometrics",
+   "benchmarks": [
+    "OULU-NPU",
+    "SiW / SiW-M",
+    "OCIM cross-domain protocol",
+    "LivDet (fingerprint)",
+    "SYN-MAD (morphing)"
+   ],
+   "models": [
+    {
+     "model": "CDCN",
+     "venue": "CVPR",
+     "year": 2020,
+     "idea": "Central difference convolution for face anti-spoofing",
+     "code": "https://github.com/ZitongYu/CDCN"
+    },
+    {
+     "model": "SSDG",
+     "venue": "CVPR",
+     "year": 2020,
+     "idea": "Single-side domain generalisation for FAS",
+     "code": ""
+    },
+    {
+     "model": "FLIP",
+     "venue": "ICCV",
+     "year": 2023,
+     "idea": "CLIP-based cross-domain face anti-spoofing",
+     "code": "https://github.com/koushiksrivats/FLIP"
+    }
+   ]
+  },
+  {
+   "domain": "signature",
+   "benchmarks": [
+    "CEDAR",
+    "GPDS-960 (synthetic)",
+    "MCYT-75",
+    "BHSig260 (Bengali/Hindi)"
+   ],
+   "models": [
+    {
+     "model": "SigNet (Hafemann et al.)",
+     "venue": "Pattern Recognition",
+     "year": 2017,
+     "idea": "Writer-independent CNN features + writer-dependent SVM",
+     "code": ""
+    },
+    {
+     "model": "SigNet (Siamese, Dey et al.)",
+     "venue": "arXiv",
+     "year": 2017,
+     "idea": "Siamese CNN with contrastive loss",
+     "code": ""
+    }
+   ]
+  },
+  {
+   "domain": "document",
+   "benchmarks": [
+    "DocTamper",
+    "FUNSD",
+    "DocVQA",
+    "IAM handwriting",
+    "ICDAR competitions"
+   ],
+   "models": [
+    {
+     "model": "LayoutLMv3",
+     "venue": "ACM MM",
+     "year": 2022,
+     "idea": "Unified text–image masking pre-training for documents",
+     "code": "https://github.com/microsoft/unilm"
+    },
+    {
+     "model": "Donut",
+     "venue": "ECCV",
+     "year": 2022,
+     "idea": "OCR-free document understanding transformer",
+     "code": "https://github.com/clovaai/donut"
+    },
+    {
+     "model": "TrOCR",
+     "venue": "AAAI",
+     "year": 2023,
+     "idea": "Transformer OCR with pre-trained image and text models",
+     "code": "https://github.com/microsoft/unilm"
+    },
+    {
+     "model": "DTD (DocTamper)",
+     "venue": "CVPR",
+     "year": 2023,
+     "idea": "Tampered-text detection with frequency perception",
+     "code": ""
+    }
+   ]
+  },
+  {
+   "domain": "architecture",
+   "benchmarks": [
+    "ImageNet-1k",
+    "COCO",
+    "ADE20K"
+   ],
+   "models": [
+    {
+     "model": "CLIP",
+     "venue": "ICML",
+     "year": 2021,
+     "idea": "Contrastive image–text pre-training",
+     "code": "https://github.com/openai/CLIP"
+    },
+    {
+     "model": "ViT",
+     "venue": "ICLR",
+     "year": 2021,
+     "idea": "Pure transformer on image patches",
+     "code": "https://github.com/google-research/vision_transformer"
+    },
+    {
+     "model": "Swin Transformer",
+     "venue": "ICCV",
+     "year": 2021,
+     "idea": "Shifted-window hierarchical transformer",
+     "code": "https://github.com/microsoft/Swin-Transformer"
+    },
+    {
+     "model": "ConvNeXt",
+     "venue": "CVPR",
+     "year": 2022,
+     "idea": "Modernised ConvNet that matches transformers",
+     "code": "https://github.com/facebookresearch/ConvNeXt"
+    },
+    {
+     "model": "SAM",
+     "venue": "ICCV",
+     "year": 2023,
+     "idea": "Promptable segmentation foundation model",
+     "code": "https://github.com/facebookresearch/segment-anything"
+    },
+    {
+     "model": "DINOv2",
+     "venue": "TMLR",
+     "year": 2024,
+     "idea": "Self-supervised general-purpose visual features",
+     "code": "https://github.com/facebookresearch/dinov2"
+    },
+    {
+     "model": "Mamba",
+     "venue": "COLM",
+     "year": 2024,
+     "idea": "Selective state-space sequence model",
+     "code": "https://github.com/state-spaces/mamba"
+    },
+    {
+     "model": "VMamba",
+     "venue": "NeurIPS",
+     "year": 2024,
+     "idea": "Visual state-space backbone",
+     "code": "https://github.com/MzeroMiko/VMamba"
+    }
+   ]
+  }
+ ]
+}

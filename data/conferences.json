@@ -1,0 +1,54 @@
+{
+ "copyright": "© 2026 Bibek (bibek-cse). Curated content — all rights reserved.",
+ "note": "Venues not in the live ccf-deadlines feed (biometrics/forensics society venues, journal special issues). deadline:null = TBA.",
+ "items": [
+  {
+   "name": "IEEE T-BIOM Special Issue",
+   "what": "Human Recognition in Aerial Surveillance — papers due",
+   "deadline": "2026-12-15T23:59:00-12:00",
+   "location": "Journal",
+   "url": "https://ieee-biometrics.org/news/",
+   "tier": "IEEE"
+  },
+  {
+   "name": "IEEE T-BIOM Special Issue",
+   "what": "Identity-Centric Foundation Models for Trustworthy Biometric Recognition",
+   "deadline": null,
+   "location": "Journal",
+   "url": "https://ieee-biometrics.org/category/biometrics-council-news/",
+   "tier": "IEEE"
+  },
+  {
+   "name": "WIFS 2026 (IEEE SPS IFS-TC)",
+   "what": "Conference 7–11 Dec 2026, Sendai (submissions closed)",
+   "deadline": "2026-07-15T23:59:00-12:00",
+   "location": "Sendai, Japan",
+   "url": "https://wifs2026.utt.fr/call-for-papers",
+   "tier": "Soc"
+  },
+  {
+   "name": "IWBF 2027",
+   "what": "Workshop on Biometrics and Forensics — dates TBA",
+   "deadline": null,
+   "location": "Melbourne, Australia",
+   "url": "https://eab.org/expertise/sig/academia/iwbf-series.html",
+   "tier": "Soc"
+  },
+  {
+   "name": "ISBA (IEEE Biometrics Council)",
+   "what": "Identity, Security & Behavior Analysis — next CfP TBA",
+   "deadline": null,
+   "location": "",
+   "url": "https://ieee-biometrics.org/",
+   "tier": "Soc"
+  },
+  {
+   "name": "BIOSIG (EAB / GI)",
+   "what": "Biometrics Special Interest Group — next CfP TBA",
+   "deadline": null,
+   "location": "",
+   "url": "https://ieee-biometrics.org/category/conferences/",
+   "tier": "Soc"
+  }
+ ]
+}

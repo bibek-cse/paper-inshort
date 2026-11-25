@@ -1,0 +1,30 @@
+ResearchReels
+Copyright (c) 2026 Bibek (GitHub: bibek-cse). All rights reserved.
+
+This repository and the ResearchReels web app — including its source code,
+design, user interface, icons and logo, and curated content (concept decks,
+SOTA tables, research ideas and venue lists) — are the exclusive property of
+the copyright holder.
+
+You MAY view and use the hosted app at https://bibek-cse.github.io/research-reels/
+for personal, non-commercial research and learning.
+
+You MAY NOT, without prior written permission from the copyright holder:
+  * copy, fork for redistribution, re-host or mirror the app or its code;
+  * modify the code or create derivative apps or websites from it;
+  * remove or alter copyright notices, attribution or the logo;
+  * use the name "ResearchReels" or its logo for another product;
+  * sell, sublicense or use any part of it commercially.
+
+The fact that this repository is publicly visible does NOT grant any licence.
+For permission, contact the author via https://github.com/bibek-cse.
+
+THIRD-PARTY MATERIAL (not covered by the above; retains its own licence):
+  * js-yaml (assets/vendor/js-yaml.min.js) — MIT License, (c) 2011-2015 Vitaly Puzrin.
+  * Paper titles, abstracts, figures and metadata are fetched live from OpenAlex,
+    Crossref, Semantic Scholar, arXiv and ccf-deadlines and remain the property of
+    their respective authors and publishers; figures are shown with citation and a
+    link to the original paper.
+  * Icon lettering uses Noto Serif and Damion (SIL Open Font License 1.1).
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.

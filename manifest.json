@@ -1,0 +1,65 @@
+{
+ "id": "./",
+ "name": "ResearchReels — top-venue papers in 60 seconds",
+ "short_name": "ResearchReels",
+ "description": "Live reels of A*/A/B and IEEE/ACM papers on deepfakes, biometrics, watermarking, forensics and CV. © 2026 Bibek (bibek-cse).",
+ "start_url": "./?source=pwa",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#0b1230",
+ "theme_color": "#0b1230",
+ "categories": [
+  "education",
+  "productivity",
+  "news"
+ ],
+ "icons": [
+  {
+   "src": "assets/icons/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "assets/icons/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "assets/icons/maskable-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "maskable"
+  },
+  {
+   "src": "assets/icons/maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ],
+ "shortcuts": [
+  {
+   "name": "Deadlines",
+   "url": "./#deadline",
+   "icons": [
+    {
+     "src": "assets/icons/icon-96.png",
+     "sizes": "96x96"
+    }
+   ]
+  },
+  {
+   "name": "SOTA tables",
+   "url": "./#sota",
+   "icons": [
+    {
+     "src": "assets/icons/icon-96.png",
+     "sizes": "96x96"
+    }
+   ]
+  }
+ ]
+}

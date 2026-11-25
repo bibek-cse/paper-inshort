@@ -1,0 +1,466 @@
+{
+ "copyright": "© 2026 Bibek (bibek-cse). Curated content — all rights reserved.",
+ "items": [
+  {
+   "id": "concept-eer",
+   "type": "concept",
+   "domain": "biometrics",
+   "title": "EER — Equal Error Rate",
+   "authors": "Concept, made easy",
+   "tags": [
+    "eer",
+    "far",
+    "frr",
+    "verification"
+   ],
+   "inshort": "EER is the point where a biometric system wrongly accepts impostors exactly as often as it wrongly rejects genuine users. One number to compare verifiers; lower is better.",
+   "slides": [
+    {
+     "icon": "🍕",
+     "title": "Think of it like…",
+     "text": "A bouncer with a strictness dial: too strict and friends are turned away, too loose and strangers walk in. EER is the dial setting where both mistakes happen equally often."
+    },
+    {
+     "icon": "📌",
+     "title": "What it is",
+     "text": "FAR (false accept rate) falls and FRR (false reject rate) rises as you raise the threshold. EER is where the two curves cross."
+    },
+    {
+     "icon": "⚙️",
+     "title": "How it works",
+     "flow": [
+      "Score every genuine and impostor pair",
+      "Sweep the threshold",
+      "Compute FAR and FRR at each threshold",
+      "Find where FAR = FRR"
+     ]
+    },
+    {
+     "icon": "∑",
+     "title": "The one formula",
+     "text": "EER = FAR(τ*) = FRR(τ*), where τ* is the threshold where the two rates meet."
+    },
+    {
+     "icon": "📍",
+     "title": "Where you'll see it",
+     "points": [
+      "Speaker verification & anti-spoofing (ASVspoof)",
+      "Face and signature verification",
+      "Deepfake detection papers"
+     ]
+    },
+    {
+     "icon": "🚧",
+     "title": "Common pitfalls",
+     "points": [
+      "EER hides behaviour at the operating point you actually deploy (e.g. FAR=0.1%)",
+      "Small test sets make EER noisy — report confidence intervals"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "concept-gradcam",
+   "type": "concept",
+   "domain": "cv",
+   "title": "Grad-CAM — where is the model looking?",
+   "authors": "Concept, made easy",
+   "tags": [
+    "explainability",
+    "cnn",
+    "heatmap"
+   ],
+   "inshort": "Grad-CAM makes a heatmap of the image regions that pushed a CNN toward its decision, using gradients of the class score w.r.t. the last conv features.",
+   "slides": [
+    {
+     "icon": "🍕",
+     "title": "Think of it like…",
+     "text": "Like asking a judge which parts of the evidence moved them most, and highlighting those pages."
+    },
+    {
+     "icon": "📌",
+     "title": "What it is",
+     "text": "It weights each feature map of a conv layer by how much the class score changes with it, sums them, and keeps the positive part."
+    },
+    {
+     "icon": "⚙️",
+     "title": "How it works",
+     "flow": [
+      "Forward pass, pick a class score",
+      "Backprop to the last conv layer",
+      "Average gradients per channel → weights",
+      "Weighted sum of feature maps → ReLU → upsample"
+     ]
+    },
+    {
+     "icon": "∑",
+     "title": "The one formula",
+     "text": "L = ReLU( Σ_k α_k A^k ),  α_k = mean over pixels of ∂y_c/∂A^k  (A^k: k-th feature map, y_c: class score)"
+    },
+    {
+     "icon": "📍",
+     "title": "Where you'll see it",
+     "points": [
+      "Explaining deepfake detectors",
+      "Checking dataset shortcuts",
+      "Weak localization"
+     ]
+    },
+    {
+     "icon": "🚧",
+     "title": "Common pitfalls",
+     "points": [
+      "Low resolution (size of the conv map)",
+      "A plausible heatmap does not prove the model is right"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "concept-vit",
+   "type": "concept",
+   "domain": "architecture",
+   "title": "Vision Transformer in 5 slides",
+   "authors": "Concept, made easy",
+   "tags": [
+    "transformer",
+    "attention",
+    "backbone"
+   ],
+   "inshort": "A ViT cuts an image into patches, turns each into a token, and lets every patch 'talk' to every other with self-attention — no convolutions needed.",
+   "slides": [
+    {
+     "icon": "🍕",
+     "title": "Think of it like…",
+     "text": "Tear a photo into stamps, label each stamp, and let a room full of people (patches) chat to decide what the whole photo shows."
+    },
+    {
+     "icon": "📌",
+     "title": "What it is",
+     "text": "Patches are linearly embedded, a position embedding is added, and a stack of Transformer encoder blocks processes the sequence. A [CLS] token gathers the global answer."
+    },
+    {
+     "icon": "⚙️",
+     "title": "How it works",
+     "flow": [
+      "Split image into 16×16 patches",
+      "Flatten + linear projection → tokens",
+      "Add position embeddings and a [CLS] token",
+      "L × (Multi-head self-attention + MLP)",
+      "[CLS] → classifier head"
+     ]
+    },
+    {
+     "icon": "∑",
+     "title": "The one formula",
+     "text": "Attention(Q,K,V) = softmax(QKᵀ / √d) V — each token mixes information from all tokens, weighted by similarity."
+    },
+    {
+     "icon": "📍",
+     "title": "Where you'll see it",
+     "points": [
+      "CLIP image encoders",
+      "DINOv2 features for forensics",
+      "Watermark extractors (e.g. WAM)"
+     ]
+    },
+    {
+     "icon": "🚧",
+     "title": "Common pitfalls",
+     "points": [
+      "Data-hungry without pretraining",
+      "Cost grows with the square of the number of patches"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "concept-diffusion",
+   "type": "concept",
+   "domain": "deepfake",
+   "title": "Diffusion models without the maths fear",
+   "authors": "Concept, made easy",
+   "tags": [
+    "diffusion",
+    "generative",
+    "denoising"
+   ],
+   "inshort": "A diffusion model learns to remove noise step by step. Start from pure noise, denoise many times, and an image appears.",
+   "slides": [
+    {
+     "icon": "🍕",
+     "title": "Think of it like…",
+     "text": "Sculpting: start with a rough block (noise) and chip away a little at a time until the statue (image) emerges."
+    },
+    {
+     "icon": "📌",
+     "title": "What it is",
+     "text": "Training adds known noise to real images and teaches a network to predict that noise. Generation runs the process backwards."
+    },
+    {
+     "icon": "⚙️",
+     "title": "How it works",
+     "flow": [
+      "Take a real image x₀",
+      "Add Gaussian noise at a random level t → x_t",
+      "Network predicts the added noise ε",
+      "At sampling: start from noise, subtract predicted noise repeatedly",
+      "Latent diffusion does this in a compressed VAE space"
+     ]
+    },
+    {
+     "icon": "∑",
+     "title": "The one formula",
+     "text": "Loss = ‖ε − ε_θ(x_t, t)‖² — predict the noise ε that was added at step t."
+    },
+    {
+     "icon": "📍",
+     "title": "Where you'll see it",
+     "points": [
+      "Stable Diffusion, face-swap refiners",
+      "Diffusion-based deepfakes",
+      "Regeneration attacks on watermarks"
+     ]
+    },
+    {
+     "icon": "🚧",
+     "title": "Common pitfalls",
+     "points": [
+      "Many sampling steps → slow",
+      "Reconstruction error is a tempting but brittle fake detector"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "concept-contrastive",
+   "type": "concept",
+   "domain": "cv",
+   "title": "Contrastive learning & CLIP",
+   "authors": "Concept, made easy",
+   "tags": [
+    "clip",
+    "contrastive",
+    "embedding"
+   ],
+   "inshort": "Contrastive learning pulls matching pairs together in embedding space and pushes non-matching pairs apart. CLIP does this with images and their captions.",
+   "slides": [
+    {
+     "icon": "🍕",
+     "title": "Think of it like…",
+     "text": "A party game: find your partner in a crowd. You get rewarded for standing next to your partner and far from everyone else."
+    },
+    {
+     "icon": "📌",
+     "title": "What it is",
+     "text": "For a batch of N pairs, the model scores all N×N combinations and trains so the true pairs win, using a softmax over similarities."
+    },
+    {
+     "icon": "⚙️",
+     "title": "How it works",
+     "flow": [
+      "Encode images and texts",
+      "L2-normalize embeddings",
+      "Similarity matrix (N×N)",
+      "Cross-entropy: diagonal = correct pairs",
+      "Use embeddings zero-shot"
+     ]
+    },
+    {
+     "icon": "∑",
+     "title": "The one formula",
+     "text": "ℓ_i = −log( exp(sim(i,i)/τ) / Σ_j exp(sim(i,j)/τ) ),  τ = temperature"
+    },
+    {
+     "icon": "📍",
+     "title": "Where you'll see it",
+     "points": [
+      "UnivFD fake-image detection",
+      "Zero-shot VLM classification",
+      "Self-supervised pretraining"
+     ]
+    },
+    {
+     "icon": "🚧",
+     "title": "Common pitfalls",
+     "points": [
+      "Needs large batches / many negatives",
+      "Temperature τ strongly affects results"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "concept-prototype",
+   "type": "concept",
+   "domain": "forensics",
+   "title": "Prototype networks — 'this looks like that'",
+   "authors": "Concept, made easy",
+   "tags": [
+    "interpretability",
+    "prototype",
+    "protopnet"
+   ],
+   "inshort": "Prototype models classify by comparing parts of an input to learned prototypical parts, so each decision can be explained by pointing at examples.",
+   "slides": [
+    {
+     "icon": "🍕",
+     "title": "Think of it like…",
+     "text": "A bird-watcher saying: 'it's a cardinal because this beak looks like that beak I've seen before.'"
+    },
+    {
+     "icon": "📌",
+     "title": "What it is",
+     "text": "The network learns a set of prototype vectors per class. Each image patch is compared with each prototype; similarities feed a linear layer."
+    },
+    {
+     "icon": "⚙️",
+     "title": "How it works",
+     "flow": [
+      "Backbone → patch features",
+      "Similarity to each learned prototype",
+      "Max-pool similarity per prototype",
+      "Linear layer → class scores",
+      "Project prototypes onto real training patches for visualization"
+     ]
+    },
+    {
+     "icon": "∑",
+     "title": "The one formula",
+     "text": "sim(z, p) = log( (‖z−p‖² + 1) / (‖z−p‖² + ε) )"
+    },
+    {
+     "icon": "📍",
+     "title": "Where you'll see it",
+     "points": [
+      "ProtoPNet, ProtoPool, PIP-Net",
+      "Interpretable deepfake detection",
+      "Medical imaging"
+     ]
+    },
+    {
+     "icon": "🚧",
+     "title": "Common pitfalls",
+     "points": [
+      "Prototypes can latch onto background",
+      "Explanations need human validation"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "concept-jnd",
+   "type": "concept",
+   "domain": "watermark",
+   "title": "JND — Just Noticeable Difference",
+   "authors": "Concept, made easy",
+   "tags": [
+    "watermarking",
+    "perception",
+    "imperceptibility"
+   ],
+   "inshort": "JND is the smallest change a human can notice at each pixel. Watermarks hide more energy where JND is high (texture) and less where it is low (flat sky).",
+   "slides": [
+    {
+     "icon": "🍕",
+     "title": "Think of it like…",
+     "text": "Whispering in a noisy café vs. a silent library: you can say more in the café without anyone noticing."
+    },
+    {
+     "icon": "📌",
+     "title": "What it is",
+     "text": "A JND map estimates per-pixel visibility thresholds from luminance and texture masking. Scaling the watermark by this map keeps it invisible but strong."
+    },
+    {
+     "icon": "⚙️",
+     "title": "How it works",
+     "flow": [
+      "Compute luminance adaptation",
+      "Compute texture / contrast masking",
+      "Combine → JND map",
+      "Scale the watermark residual by the map"
+     ]
+    },
+    {
+     "icon": "∑",
+     "title": "The one formula",
+     "text": "x_w = x + α · JND(x) ⊙ r   (r: watermark residual, α: strength)"
+    },
+    {
+     "icon": "📍",
+     "title": "Where you'll see it",
+     "points": [
+      "Invisible watermark embedders",
+      "Image compression",
+      "Adversarial perturbation budgets"
+     ]
+    },
+    {
+     "icon": "🚧",
+     "title": "Common pitfalls",
+     "points": [
+      "Simple JND models ignore colour and viewing distance",
+      "Attackers can also exploit high-JND regions"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "concept-pad",
+   "type": "concept",
+   "domain": "biometrics",
+   "title": "Presentation Attack Detection (PAD)",
+   "authors": "Concept, made easy",
+   "tags": [
+    "anti-spoofing",
+    "liveness",
+    "apcer"
+   ],
+   "inshort": "PAD decides whether the thing in front of a biometric sensor is a live person or a spoof — a printed photo, a replayed video, a mask, or a synthetic voice.",
+   "slides": [
+    {
+     "icon": "🍕",
+     "title": "Think of it like…",
+     "text": "A cashier checking not just the photo on your ID, but that you are a real person and not a cardboard cut-out."
+    },
+    {
+     "icon": "📌",
+     "title": "What it is",
+     "text": "PAD models look for cues like texture, depth, reflection, micro-motion or spectral artifacts, and are evaluated with APCER and BPCER."
+    },
+    {
+     "icon": "⚙️",
+     "title": "How it works",
+     "flow": [
+      "Capture sample",
+      "Extract liveness cues (texture, depth, rPPG, spectrum)",
+      "Classifier → bona fide or attack",
+      "Report APCER (attacks accepted) and BPCER (real users rejected)"
+     ]
+    },
+    {
+     "icon": "∑",
+     "title": "The one formula",
+     "text": "APCER = attacks classified as bona fide / all attacks;  BPCER = bona fide classified as attacks / all bona fide"
+    },
+    {
+     "icon": "📍",
+     "title": "Where you'll see it",
+     "points": [
+      "Face anti-spoofing",
+      "Voice anti-spoofing (ASVspoof)",
+      "Fingerprint liveness"
+     ]
+    },
+    {
+     "icon": "🚧",
+     "title": "Common pitfalls",
+     "points": [
+      "Unseen attack types break most models",
+      "Deepfake injection attacks bypass the camera entirely"
+     ]
+    }
+   ]
+  }
+ ]
+}
