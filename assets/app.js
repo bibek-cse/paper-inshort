@@ -1,5 +1,5 @@
 /*!
- * PaperInShot — https://bibek-cse.github.io/research-reels/
+ * PaperInShot — https://bibek-cse.github.io/paper-inshort/
  * Copyright (c) 2026 Bibek (GitHub: bibek-cse). All rights reserved.
  * Unauthorised copying, modification, redistribution or re-hosting of this file,
  * via any medium, is prohibited without prior written permission. See LICENSE.
@@ -11,7 +11,7 @@ const RR = window.RR, D = RR.DOMAINS, safe = RR.safeUrl;
 const KIND = { paper: 'Paper', idea: 'Research idea', concept: 'Concept, made easy' };
 const STOP = new Set('the and for with from that this into using based towards toward via over under are our their its than then them these those such can not but has have had was were been being what when where which while who will would could should may might also more most less very much many any each other some only same new novel approach method methods paper propose proposed show results model models data dataset learning deep neural network networks task tasks study analysis framework'.split(' '));
 const PKEY = 'rr_profile_v1', CHUNK = 20;
-const OWNER = { name: 'Bibek', gh: 'bibek-cse', home: 'https://bibek-cse.github.io/research-reels/', year: 2026 };
+const OWNER = { name: 'Bibek', gh: 'bibek-cse', home: 'https://bibek-cse.github.io/paper-inshort/', year: 2026 };
 const COPY = `<p class="copyright">© ${OWNER.year} PaperInShot · created by <a href="https://github.com/${OWNER.gh}" target="_blank" rel="noopener noreferrer">${OWNER.name} (@${OWNER.gh})</a> · All rights reserved.</p>`;
 const ALLOWED_HOSTS = ['bibek-cse.github.io', 'localhost', '127.0.0.1'];
 const FEED_DOMAINS = ['deepfake', 'watermark', 'voice', 'forensics', 'face', 'signature', 'biometrics', 'document', 'architecture'];

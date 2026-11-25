@@ -7,7 +7,7 @@
 
 **Stop scrolling through 14-page PDFs. Start swiping through the ideas that matter.**
 
-[![Open the app](https://img.shields.io/badge/▶%20Open%20PaperInShot-bibek--cse.github.io%2Fresearch--reels-0b1230?style=for-the-badge)](https://bibek-cse.github.io/research-reels/)
+[![Open the app](https://img.shields.io/badge/▶%20Open%20PaperInShot-bibek--cse.github.io%2Fpaper--inshort-0b1230?style=for-the-badge)](https://bibek-cse.github.io/paper-inshort/)
 
 [![Free](https://img.shields.io/badge/price-free-4cd6a0?style=flat-square)](#-free-private--secure)
 [![Installable](https://img.shields.io/badge/app-installable%20PWA-7c5cff?style=flat-square)](#-install-it-like-an-app)
@@ -16,7 +16,7 @@
 
 <img width="320" alt="Scan to open PaperInShot" src="assets/qr.png" />
 
-**Scan to open** · or visit **https://bibek-cse.github.io/research-reels/**
+**Scan to open** · or visit **https://bibek-cse.github.io/paper-inshort/**
 
 </div>
 
@@ -103,7 +103,7 @@ PaperInShot installs on your phone or laptop with its own icon and works offline
 
 ## 💬 Feedback
 
-Found a bug, want a new venue or domain, or have an idea? Open an [issue](https://github.com/bibek-cse/research-reels/issues). Feedback is welcome!
+Found a bug, want a new venue or domain, or have an idea? Open an [issue](https://github.com/bibek-cse/paper-inshort/issues). Feedback is welcome!
 
 If PaperInShot saves you time, **⭐ star this repo** and share the QR with your lab.
 

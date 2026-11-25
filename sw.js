@@ -1,11 +1,11 @@
 /*!
- * PaperInShot — https://bibek-cse.github.io/research-reels/
+ * PaperInShot — https://bibek-cse.github.io/paper-inshort/
  * Copyright (c) 2026 Bibek (GitHub: bibek-cse). All rights reserved.
  * Unauthorised copying, modification, redistribution or re-hosting of this file,
  * via any medium, is prohibited without prior written permission. See LICENSE.
  */
 // PaperInShot service worker: app shell = stale-while-revalidate; never touches third-party API traffic.
-const C = 'rr-v21';
+const C = 'rr-v22';
 const SHELL = ['./', 'index.html', 'manifest.json', 'assets/style.css', 'assets/app.js', 'assets/api.js', 'assets/story.js', 'assets/venue.js', 'assets/venues.js',
   'assets/vendor/js-yaml.min.js', 'assets/icons/icon-192.png', 'data/feed.json', 'data/concepts.json', 'data/conferences.json', 'data/sota.json'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(C).then(c => c.addAll(SHELL))); self.skipWaiting(); });
