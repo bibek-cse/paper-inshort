@@ -33,7 +33,16 @@ function rich(t, max = Infinity) {
   t = RR.smooth(RR.normLinks(t).replace(/(\w)\(\[/g, '$1 ([')).replace(/\\(textbf|textit|emph|mathrm|mathbf)\{([^}]*)\}/g, '$2');
   const re = /\[([^\]]{1,200})\]\((https?:[^)\s]+)\)/g, clean = x => RR.tex(x, true).replace(/\*\*|__|\$/g, '').replace(/\\[a-zA-Z]+/g, '').replace(/\s{2,}/g, ' ');
   let out = '', vis = 0, last = 0, done = false, m;
-  const text = x => { if (done) return; x = clean(x); if (vis + x.length > max) { x = x.slice(0, Math.max(0, max - vis)).replace(/\s+\S*$/, '') + '…'; done = true; } vis += x.length; out += esc(x); };
+  const bare = x => {   // leftover bare URLs, e.g. "(https://arxiv.org/html/…#bib.bib11)" → a short "[ref]" link instead of the raw address
+    let h = '', i = 0; const R = /\(?\s*(https?:\/\/[^\s()<>]+[^\s()<>.,;:])\s*\)?/g; let m;
+    while ((m = R.exec(x))) {
+      const url = safe(m[1]); h += esc(x.slice(i, m.index)); i = R.lastIndex;
+      let label = 'link'; try { const u = new URL(url); label = /#bib/.test(u.hash) ? 'ref' : u.hostname.replace(/^www\./, ''); } catch (e) {}
+      h += url ? ` <a class="cite" href="${esc(url)}" target="_blank" rel="noopener noreferrer">[${esc(label)}]</a>` : esc(m[0]);
+    }
+    return h + esc(x.slice(i));
+  };
+  const text = x => { if (done) return; x = clean(x); if (vis + x.length > max) { x = x.slice(0, Math.max(0, max - vis)).replace(/\s+\S*$/, '') + '…'; done = true; } vis += x.length; out += bare(x); };
   while ((m = re.exec(t)) && !done) {
     text(t.slice(last, m.index)); last = re.lastIndex; if (done) break;
     const label = clean(m[1]), url = safe(m[2]);
@@ -381,27 +390,27 @@ function slideHTML(s, i, n) {
     : `<p>The open text doesn’t state limitations explicitly. Good questions to ask while reading:</p><ul><li>Does it work on unseen generators / datasets?</li><li>Is it robust to compression, resizing and other real-world edits?</li><li>What does it cost (compute, data, labels)?</li></ul>`}</div>`;
   if (s.type === 'conclusion') return `<div class="slide">${head}<div class="explain"><blockquote>${rich(s.text)}</blockquote></div><p class="hint small">From the conclusion of ${A(dk.fig.html, esc(cite(dk.it)), 'cite')}</p></div>`;
   if (s.type === 'hook') return `<div class="slide hook">${num}<div class="hook-ico">${esc(s.icon)}</div><div class="hook-k">${esc(s.title)}</div>
-    <p class="hook-prob">${esc(s.problem)}</p><h3 class="hook-q">${esc(s.question)}</h3>${s.sub ? `<p class="hook-sub">${esc(s.sub)}</p>` : ''}<p class="hint small">Tap → to see how the paper answers it</p></div>`;
-  if (s.type === 'versus') return `<div class="slide">${head}<div class="versus"><div class="vs-l"><b>${esc(s.left.h)}</b><p>${esc(s.left.t)}</p></div>
-    <div class="vs-mid">→</div><div class="vs-r"><b>${esc(s.right.h)}</b><p>${esc(s.right.t)}</p></div></div></div>`;
-  if (s.type === 'terms') return `<div class="slide">${head}<div class="terms">${s.terms.map(t => `<div class="term"><b>${esc(t.t)}</b><span>${esc(t.d)}</span></div>`).join('')}</div>
+    <p class="hook-prob">${rich(s.problem)}</p><h3 class="hook-q">${esc(s.question)}</h3>${s.sub ? `<p class="hook-sub">${rich(s.sub)}</p>` : ''}<p class="hint small">Tap → to see how the paper answers it</p></div>`;
+  if (s.type === 'versus') return `<div class="slide">${head}<div class="versus"><div class="vs-l"><b>${esc(s.left.h)}</b><p>${rich(s.left.t)}</p></div>
+    <div class="vs-mid">→</div><div class="vs-r"><b>${esc(s.right.h)}</b><p>${rich(s.right.t)}</p></div></div></div>`;
+  if (s.type === 'terms') return `<div class="slide">${head}<div class="terms">${s.terms.map(t => `<div class="term"><b>${esc(t.t)}</b><span>${rich(t.d)}</span></div>`).join('')}</div>
     <p class="hint small">Only terms this paper actually uses.</p></div>`;
   if (s.type === 'stats') return `<div class="slide">${head}${dk.fig?.results ? figHTML(dk.fig.results, 'Figure') : ''}
     ${s.stats?.length ? `<div class="stats">${s.stats.map(x => `<div class="stat"><b>${esc(x.v)}</b><span>${esc(x.l)}</span></div>`).join('')}</div>` : ''}${ul(s.points)}</div>`;
   if (s.type === 'chips') return `<div class="slide">${head}<div class="dchips">${s.chips.map(c => `<span>${esc(c)}</span>`).join('')}</div><p class="hint">${esc(s.note || '')}</p></div>`;
-  if (s.type === 'eli5') return `<div class="slide eli5">${head}<div class="bubble">${esc(s.text)}</div></div>`;
+  if (s.type === 'eli5') return `<div class="slide eli5">${head}<div class="bubble">${rich(s.text)}</div></div>`;
   if (s.type === 'quiz') { const pick = dk.quizPick;
     return `<div class="slide">${head}<p class="quiz-q">${esc(s.q)}</p><div class="quiz">${s.opts.map((o, k) => `<button data-opt="${k}" class="${pick == null ? '' : o.ok ? 'right' : pick === k ? 'wrong' : 'dim'}">${esc(o.t)}</button>`).join('')}</div>
     ${pick == null ? '<p class="hint small">Two of these come from other papers in your feed.</p>' : `<p class="quiz-res">${s.opts[pick].ok ? '🎉 Spot on — you’ve got the core idea.' : '🙂 Not quite — the highlighted one is this paper.'}</p>`}</div>`; }
-  if (s.type === 'guide') return `<div class="slide">${head}<p class="readif">${esc(s.readIf)}</p><h4>Smart reading path · ${esc(s.time)}</h4>
+  if (s.type === 'guide') return `<div class="slide">${head}<p class="readif">${rich(s.readIf)}</p><h4>Smart reading path · ${esc(s.time)}</h4>
     <ol class="path">${s.path.map(x => `<li>${esc(x)}</li>`).join('')}</ol>${A(RR.sourceOf(dk.it).url, 'Open the paper ↗', 'mini-btn')}</div>`;
   if (s.gallery) return `<div class="slide">${num}<h3><span class="ico">🖼️</span>All figures</h3>
     <div class="gallery">${dk.fig.figs.map(g => `<figure><img src="${esc(dk.crops[g.src] || g.src)}" alt="Figure ${g.n}" referrerpolicy="no-referrer" loading="lazy" data-zoom data-n="${g.n}"><figcaption><b>Fig. ${g.n}</b> ${rich(g.caption, 110)}</figcaption></figure>`).join('')}</div>
     <p class="hint small">Tap any figure to view full screen and swipe through all of them. Source: ${A(RR.sourceOf(it).url, esc(cite(it)), 'cite')}</p></div>`;
-  if (s.results && dk.fig?.results) return `<div class="slide">${num}<h3><span class="ico">${esc(s.icon || '📊')}</span>${esc(s.title)}</h3>${figHTML(dk.fig.results, 'Figure')}${s.text ? `<p>${esc(s.text)}</p>` : ''}${ul(s.points)}${flow(s.flow)}</div>`;
+  if (s.results && dk.fig?.results) return `<div class="slide">${num}<h3><span class="ico">${esc(s.icon || '📊')}</span>${esc(s.title)}</h3>${figHTML(dk.fig.results, 'Figure')}${s.text ? `<p>${rich(s.text)}</p>` : ''}${ul(s.points)}${flow(s.flow)}</div>`;
   if (s.arch) return archSlide(s, num);
   if (s.src) return srcSlide(num);
-  return `<div class="slide">${num}<h3><span class="ico">${esc(s.icon || '•')}</span>${esc(s.title)}</h3>${s.text ? `<p>${esc(s.text)}</p>` : ''}${ul(s.points)}${flow(s.flow)}</div>`;
+  return `<div class="slide">${num}<h3><span class="ico">${esc(s.icon || '•')}</span>${esc(s.title)}</h3>${s.text ? `<p>${rich(s.text)}</p>` : ''}${ul(s.points)}${flow(s.flow)}</div>`;
 }
 function archSlide(s, num) {
   const dk = S.deck, it = dk.it, f = dk.fig, fig = f && (dk.figSel || f.arch);
@@ -415,7 +424,7 @@ function archSlide(s, num) {
         <button class="explain-btn" data-explain>${dk.explain ? 'Hide explanation' : '🔍 Explain this architecture'}</button>${dk.explain ? explainHTML(fig) : ''}`;
     }
   }
-  return `<div class="slide arch">${num}<h3><span class="ico">${esc(s.icon || '🏗️')}</span>${esc(s.title)}</h3>${box}${s.text ? `<p>${esc(s.text)}</p>` : ''}${ul(s.points)}${flow(s.flow)}</div>`;
+  return `<div class="slide arch">${num}<h3><span class="ico">${esc(s.icon || '🏗️')}</span>${esc(s.title)}</h3>${box}${s.text ? `<p>${rich(s.text)}</p>` : ''}${ul(s.points)}${flow(s.flow)}</div>`;
 }
 function explainHTML(fig) {
   const dk = S.deck, it = dk.it, e = dk.explain, f = dk.fig, ref = `<p class="hint small">Source: ${A(f.html, esc(cite(it)) + ' — full text')}</p>`;
@@ -659,6 +668,7 @@ function renderSettings() {
       <label class="toggle"><input type="checkbox" id="remember" ${s.rememberKeys ? 'checked' : ''}> Remember keys on this device (otherwise cleared when the tab closes)</label>
     </details>
     <details><summary><h4>⚡ API limits (optional)</h4></summary>${fld('email', 'Email for OpenAlex/Crossref polite pool')}${fld('oaKey', 'OpenAlex API key', 'password')}${fld('jinaKey', 'Jina Reader key (more figure lookups)', 'password')}</details>
+    <button class="install-btn" id="forceUpdate">⟳ Update app to the latest version</button>
     <div class="row2"><button class="ghost" id="clearCache">Clear cache</button><button class="ghost" id="resetProfile">Reset likes &amp; interests</button></div>
     <p class="hint small">Sources: OpenAlex · Crossref · Semantic Scholar · arXiv · ccf-deadlines. Tiers: CORE via ccf-deadlines.</p>
     <div class="about"><b>About</b><br>PaperInShot — design, code, icon and curated content © ${OWNER.year} ${OWNER.name} (@${OWNER.gh}). All rights reserved. Copying, re-hosting or redistributing this app or its code without written permission is not allowed. Paper metadata belongs to its publishers and authors.</div>${COPY}`;
@@ -679,6 +689,11 @@ function onSettingsClick(e) {
   const ac = t.closest('[data-accent]'); if (ac) { s.accent = ac.dataset.accent; RR.saveSettings(); applyTheme(); return renderSettings(); }
   const term = t.closest('[data-term]'); if (term) { delete S.profile.terms[term.dataset.term]; saveProfile(); return renderSettings(); }
   if (t.id === 'clearCache') { RR.cache.clear(); sessionStorage.removeItem('rr_net'); S.byDomain = {}; S.ddl = null; toast('Cache cleared'); sync(true); }
+  if (t.id === 'forceUpdate') {   // get the newest app version: drop the offline copy + cached paper data, then reload
+    toast('Updating to the latest version…'); RR.cache.clear();
+    Promise.all([navigator.serviceWorker?.getRegistrations?.().then(rs => Promise.all(rs.map(r => r.unregister()))), window.caches?.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))))])
+      .catch(() => {}).finally(() => location.reload());
+  }
   if (t.id === 'resetProfile' && confirm('Clear likes, saves and interests?')) { localStorage.removeItem(PKEY); S.profile = load(PKEY, { terms: {}, liked: [], saved: {}, opened: [], searches: [] }); renderSettings(); render(); }
 }
 

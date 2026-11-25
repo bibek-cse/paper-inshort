@@ -588,7 +588,7 @@ Use ONLY the given text. Never invent numbers or names. Plain, vivid English. Re
 "results":["2-4 bullets, numbers only if present"],"limitations":"1-2 sentences or 'Not stated'","eli5":"2 sentences with an analogy"}`;
 RR.aiSummary = async (p, extra = '') => {
   const key = 'ai3:' + p.id; const c = RR.cache.get(key, 24 * 60); if (c) return c;
-  const j = await RR.llm(RR.STORY_SYS, `Title: ${p.title}\nVenue: ${p.venue} ${p.year}\nAbstract: ${p.abstract}\n${extra ? 'Method section excerpt: ' + extra : ''}`);
+  const j = await RR.llm(RR.STORY_SYS, `Title: ${p.title}\nVenue: ${p.venue} ${p.year}\nAbstract: ${p.abstract}\n${extra ? 'Method section excerpt: ' + RR.mdPlain(extra) : ''}`);
   const out = { inshort: j.inshort || j.one_liner, story: j, slides: [], by: 'AI (' + (RR.settings.llmModel || RR.settings.llm) + ')' };
   RR.cache.set(key, out); return out;
 };
@@ -596,7 +596,7 @@ RR.aiArch = async (p, fig) => {
   const key = 'aiarch2:' + p.id + ':' + fig.arch.n; const c = RR.cache.get(key, 24 * 60); if (c) return c;
   const j = await RR.llm(`Explain a deep-learning architecture figure to a PhD student using ONLY the caption and excerpts. Return JSON:
 {"overview":"2 sentences","components":[{"name":"","role":"1 sentence"}],"dataflow":["4-7 steps"],"training":"losses if mentioned else ''","why_it_works":"1-2 sentences"}`,
-  `Paper: ${p.title}\nFigure ${fig.arch.n} caption: ${RR.mdPlain(fig.arch.caption)}\nExcerpts:\n${fig.context.join('\n')}\nMethod: ${fig.method.slice(0, 2500)}\nAbstract: ${p.abstract}`);
+  `Paper: ${p.title}\nFigure ${fig.arch.n} caption: ${RR.mdPlain(fig.arch.caption)}\nExcerpts:\n${fig.context.map(RR.mdPlain).join('\n')}\nMethod: ${RR.mdPlain(fig.method).slice(0, 2500)}\nAbstract: ${p.abstract}`);
   RR.cache.set(key, j); return j;
 };
 RR.aiIdeas = async papers => {
