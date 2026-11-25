@@ -27,9 +27,9 @@
   <div class="top-actions">
     <button class="icon-btn hidden" id="btnInstall" aria-label="Install app">⤓</button>
     <button class="icon-btn" id="btnRefresh" aria-label="Refresh">⟳</button>
-    <button class="icon-btn" id="btnSearch" aria-label="Search">⌕</button>
     <button class="icon-btn" id="btnSettings" aria-label="Settings">⚙</button>
   </div>
+  <button class="topsearch" id="btnSearch" type="button" aria-label="Search papers"><span>⌕</span>Search papers, topics, venues…</button>
   <nav class="tabs" id="tabs">
     <button data-tab="foryou" class="on">For You</button>
     <button data-tab="paper">Papers</button>
@@ -50,7 +50,7 @@
   <div class="deck-progress" id="deckProgress"></div>
   <div class="deck-head">
     <span id="deckDomain" class="pill"></span>
-    <span class="deck-tools"><button class="ask-btn" id="deckAsk" aria-label="Ask AI about this paper">✦ Ask AI</button><button class="icon-btn" id="deckClose" aria-label="Close">✕</button></span>
+    <span class="deck-tools"><button class="icon-btn" id="deckShare" aria-label="Share this paper">↗</button><button class="ask-btn" id="deckAsk" aria-label="Ask AI about this paper">✦ Ask AI</button><button class="icon-btn" id="deckClose" aria-label="Close">✕</button></span>
   </div>
   <div class="deck-stage" id="deckStage"></div>
   <div class="deck-nav">
@@ -73,14 +73,14 @@
   <div class="sheet-card" id="askBody"></div>
 </section>
 
-<section id="searchSheet" class="sheet hidden">
+<section id="searchSheet" class="sheet full hidden" aria-label="Search">
   <div class="sheet-card">
-    <div class="sheet-head"><h3>Search top-venue papers</h3><button class="icon-btn" data-close>✕</button></div>
-    <form id="searchForm"><input id="searchInput" maxlength="200" placeholder="e.g. lip-sync deepfake, signature forgery…" autocomplete="off"><button>Go</button></form>
-    <p class="hint">Live from OpenAlex, filtered to your venue-quality setting. Searches also tune <b>For You</b>.</p>
+    <form id="searchForm" class="sform"><button type="button" class="icon-btn" data-close aria-label="Back">‹</button><input id="searchInput" type="search" maxlength="200" placeholder="Search papers, e.g. image generation" autocomplete="off" enterkeyhint="search"><button type="submit">Search</button></form>
     <div id="searchResults" class="mini-list"></div>
   </div>
 </section>
+
+<section id="shareSheet" class="sheet hidden" aria-label="Share"><div class="sheet-card" id="shareBody"></div></section>
 
 <section id="settingsSheet" class="sheet hidden">
   <div class="sheet-card" id="settingsBody"></div>

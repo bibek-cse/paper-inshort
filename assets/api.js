@@ -312,6 +312,32 @@ RR.domainPapers = async (domain, { force = false } = {}) => {
   if (!force) { const c = RR.cache.get(key, 1); if (c) return c; }
   const out = await collect(RR.DOMAINS[domain]?.q || domain, domain); RR.cache.set(key, out); return out;
 };
+/* Fast search-as-you-type: one OpenAlex call, relevance-ranked, top venues first. */
+const SEL_FULL = 'id,doi,display_name,publication_date,authorships,abstract_inverted_index,primary_location,locations,best_oa_location,cited_by_count,open_access,related_works';
+RR.quickSearch = async q => {
+  q = q.trim(); const key = 'qs:' + q.toLowerCase(); const c = RR.cache.get(key, 3); if (c) return c;
+  const j = await RR.json(`${OA}/works?${oaParams({ search: q, filter: 'has_abstract:true,from_publication_date:2017-01-01', 'per-page': 30, select: SEL_FULL })}`, {}, 15000);
+  const seen = new Set(), out = (j.results || []).map(w => RR.fixDate(RR.normalizeWork(w))).filter(p => { const k = titleKey(p.title); if (!p.title || seen.has(k)) return false; seen.add(k); return true; });
+  const allowed = RR.allowedTiers(), rank = p => p.tier && p.tier !== 'Pre' && (!allowed || allowed.includes(p.tier)) ? 2 : p.tier === 'Pre' ? 1 : 0;
+  const res = out.map((p, i) => ({ p, i })).sort((a, b) => rank(b.p) - rank(a.p) || a.i - b.i).map(x => x.p).slice(0, 20);
+  RR.cache.set(key, res); return res;
+};
+/* Rebuild a paper from its id (for shared links / search results not in the feed). */
+RR.fetchById = async id => {
+  try {
+    if (id.startsWith('oa:')) return RR.fixDate(RR.normalizeWork(await RR.json(`${OA}/works/${encodeURIComponent(id.slice(3))}?${oaParams({ select: SEL_FULL })}`)));
+    if (id.startsWith('doi:')) return RR.fixDate(RR.normalizeWork(await RR.json(`${OA}/works/doi:${encodeURIComponent(id.slice(4))}?${oaParams({ select: SEL_FULL })}`)));
+    if (id.startsWith('s2:')) {
+      const r = await RR.json(`https://api.semanticscholar.org/graph/v1/paper/${encodeURIComponent(id.slice(3))}?fields=title,abstract,venue,year,publicationDate,authors,externalIds,citationCount,openAccessPdf`);
+      const cls = RR.classifyVenue(r.venue || ''), auth = (r.authors || []).map(a => a.name);
+      return { id, type: 'paper', src: 'Semantic Scholar', title: RR.tex(r.title), abstract: RR.tex(r.abstract || ''), date: r.publicationDate || '', year: String(r.year || ''),
+        authors: auth.slice(0, 4).join(', ') + (auth.length > 4 ? ' et al.' : ''), firstAuthor: (auth[0] || '').split(' ').pop(), nAuthors: auth.length,
+        venue: r.venue || '', tier: cls.tier, venueShort: cls.short, cites: r.citationCount || 0, doi: r.externalIds?.DOI || '', arxiv: r.externalIds?.ArXiv || '',
+        url: r.externalIds?.DOI ? 'https://doi.org/' + r.externalIds.DOI : 'https://www.semanticscholar.org/paper/' + id.slice(3), pdf: RR.safeUrl(r.openAccessPdf?.url || ''), domain: RR.guessDomain(r.title + ' ' + (r.abstract || '')) };
+    }
+  } catch (e) {}
+  return null;
+};
 RR.queryPapers = async query => {
   const key = ck('q:' + query.toLowerCase()); const c = RR.cache.get(key, 6); if (c) return c;
   const out = await collect(query, null, 36); RR.cache.set(key, out); return out;

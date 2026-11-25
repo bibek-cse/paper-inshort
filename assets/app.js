@@ -179,7 +179,7 @@ function card(it, why) {
     <div class="actions">
       <button data-act="like" class="${liked ? 'on' : ''}" aria-label="Like">${liked ? '♥' : '♡'}</button>
       <button data-act="save" class="${saved ? 'on' : ''}" aria-label="Save">${saved ? '★' : '☆'}</button>
-      <button data-act="share" aria-label="Share">↗</button>
+      <button data-act="share" aria-label="Share" title="Share">⤴</button>
       <button data-act="ask" class="askmini" aria-label="Ask AI">✦</button>
       ${src ? A(src.url, esc(({ 'ACM Digital Library': 'ACM DL', 'Publisher (DOI)': 'Publisher', 'NeurIPS Proceedings': 'NeurIPS', 'IET Digital Library': 'IET', 'AAAI Proceedings': 'AAAI', 'IJCAI Proceedings': 'IJCAI', 'CVF Open Access': 'CVF' })[src.label] || src.label) + ' ↗', 'srcbtn') : ''}
       <button data-act="open" class="open">Slides ▸</button>
@@ -612,10 +612,46 @@ function onAskClick(e) {
 }
 
 // ---------------------------------------------------------------- actions & search
-async function share(it) {
-  const url = safe(it.url) || location.href.split('#')[0] + '#/r/' + encodeURIComponent(it.id), text = `${it.title}${it.venueShort ? ' (' + it.venueShort + ' ' + it.year + ')' : ''}`;
-  if (navigator.share) { try { await navigator.share({ title: it.title, text, url }); } catch (e) {} return; }
-  try { await navigator.clipboard.writeText(text + '\n' + url); toast('Link copied'); } catch (e) {}
+/* Share: a link that opens THIS paper's reel in PaperInShot, plus the original paper link */
+const appLink = it => OWNER.home + '#/r/' + encodeURIComponent(it.id);
+function shareText(it) { return `📄 ${it.title}${it.venueShort || it.venue ? ' (' + [it.venueShort || it.venue, it.year].filter(Boolean).join(' ') + ')' : ''}\nRead it in 60 seconds on PaperInShot π`; }
+function share(it) {
+  S.extra[it.id] = it;
+  const link = appLink(it), txt = shareText(it), src = it.type === 'paper' ? RR.sourceOf(it) : null, enc = encodeURIComponent;
+  const opt = (cls, label, href, icon) => `<a class="sh ${cls}" href="${esc(href)}" target="_blank" rel="noopener noreferrer"><span>${icon}</span>${label}</a>`;
+  $('#shareBody').innerHTML = `<div class="sheet-head"><h3>Share this paper</h3><button class="icon-btn" data-close aria-label="Close">✕</button></div>
+    <div class="ask-paper"><b>${esc(it.title)}</b><span>${esc(it.type === 'paper' ? cite(it) : KIND[it.type] || '')}</span></div>
+    ${navigator.share ? '<button class="install-btn" data-sh="native">↗ Share via…</button>' : ''}
+    <div class="sharegrid">
+      ${opt('wa', 'WhatsApp', 'https://wa.me/?text=' + enc(txt + '\n' + link), '💬')}
+      ${opt('li', 'LinkedIn', 'https://www.linkedin.com/sharing/share-offsite/?url=' + enc(link), 'in')}
+      ${opt('x', 'X / Twitter', 'https://twitter.com/intent/tweet?text=' + enc(txt) + '&url=' + enc(link), '𝕏')}
+      ${opt('tg', 'Telegram', 'https://t.me/share/url?url=' + enc(link) + '&text=' + enc(txt), '✈')}
+      ${opt('em', 'Email', 'mailto:?subject=' + enc(it.title) + '&body=' + enc(txt + '\n\n' + link + (src ? '\n\nOriginal paper: ' + src.url : '')), '✉')}
+      <button class="sh cp" data-sh="copy"><span>🔗</span>Copy link</button>
+    </div>
+    <div class="sharelinks">
+      <p class="hint small">Opens this paper's reel in PaperInShot:</p><div class="linkbox"><code>${esc(link)}</code></div>
+      ${src ? `<button class="ghost" data-sh="copysrc">Copy original paper link (${esc(src.label)})</button>` : ''}
+      ${it.type === 'paper' ? '<button class="ghost" data-sh="cite">Copy citation</button>' : ''}
+    </div>`;
+  $('#shareSheet').dataset.id = it.id; $('#shareSheet').classList.remove('hidden');
+}
+async function onShareClick(e) {
+  const sh = $('#shareSheet'); if (e.target === sh || e.target.closest('[data-close]')) return sh.classList.add('hidden');
+  const b = e.target.closest('[data-sh]'); if (!b) { if (e.target.closest('a.sh')) setTimeout(() => sh.classList.add('hidden'), 300); return; }
+  const it = findItem(sh.dataset.id); if (!it) return;
+  const copy = async (t, msg) => { try { await navigator.clipboard.writeText(t); toast(msg); } catch (er) { prompt('Copy:', t); } };
+  if (b.dataset.sh === 'native') { try { await navigator.share({ title: it.title, text: shareText(it), url: appLink(it) }); sh.classList.add('hidden'); } catch (er) {} }
+  else if (b.dataset.sh === 'copy') copy(shareText(it) + '\n' + appLink(it), 'Link copied');
+  else if (b.dataset.sh === 'copysrc') copy(RR.sourceOf(it).url, 'Paper link copied');
+  else if (b.dataset.sh === 'cite') copy(`${it.authors}. "${it.title}." ${it.venue || ''}${it.year ? ', ' + it.year : ''}.${it.doi ? ' doi:' + it.doi : ''}`, 'Citation copied');
+}
+/* Open any paper by id — from memory, or rebuilt from the internet (shared links, search results) */
+async function openById(id, push = false) {
+  let it = findItem(id);
+  if (!it) { toast('Opening paper…'); it = await RR.fetchById(id); if (it) S.extra[it.id] = it; }
+  if (it) openDeck(it, push); else toast('Couldn’t load this paper — check your connection');
 }
 function onFeedClick(e) {
   const vb = e.target.closest('[data-venue]'); if (vb) { e.stopPropagation(); return showVenue(vb.dataset.venue); }
@@ -630,15 +666,51 @@ function onFeedClick(e) {
   else if (a === 'share') share(it);
   else if (a === 'ask') openAsk(it);
 }
-async function doSearch(q) {
-  q = q.trim().slice(0, 200); if (!q) return;
-  const P = S.profile; P.searches = [q, ...P.searches.filter(x => x !== q)].slice(0, 30);
+/* Search: results appear while you type (debounced), tap one → its reel opens straight away */
+const SUGGEST = ['image generation', 'deepfake detection', 'image watermarking', 'voice anti-spoofing', 'forgery localization', 'face recognition', 'signature verification', 'vision-language model'];
+let searchTimer = null, searchSeq = 0;
+function resultRow(x) { S.extra[x.id] = x;
+  return `<button class="mini res" data-id="${esc(x.id)}"><span class="res-top">${tierBadge(x)}${access(x)}${x.cites ? `<span class="cites">↗ ${x.cites}</span>` : ''}</span><b>${esc(x.title)}</b><span>${esc(cite(x))}</span><i class="res-go">Open reel ›</i></button>`; }
+function searchHome() {
+  const rec = S.profile.searches.slice(0, 6);
+  $('#searchResults').innerHTML = `${rec.length ? `<h4>Recent</h4><div class="chips wrap">${rec.map(q => `<button class="chip" data-sq="${esc(q)}">↺ ${esc(q)}</button>`).join('')}</div>` : ''}
+    <h4>Try</h4><div class="chips wrap">${SUGGEST.map(q => `<button class="chip" data-sq="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+    <p class="hint small">Results come live from OpenAlex as you type. Top venues (CORE A*/A/B, IEEE/ACM Transactions) are listed first.</p>`;
+}
+function openSearch(q = '') {
+  $('#searchSheet').classList.remove('hidden'); const inp = $('#searchInput'); inp.value = q;
+  if (q) liveSearch(q, true); else searchHome();
+  setTimeout(() => inp.focus(), 60);
+}
+async function liveSearch(q, full = false) {
+  q = q.trim().slice(0, 200); const box = $('#searchResults'), my = ++searchSeq;
+  if (q.length < 2) return searchHome();
+  const qt = tokens(q), need = qt.length <= 3 ? qt.length : Math.ceil(qt.length * 0.6);
+  const local = qt.length ? [...allPapers(), ...S.classics].map(x => { const hay = (x.title + ' ' + (x.abstract || '')).toLowerCase(); return { x, s: qt.filter(t => new RegExp('\\b' + t.replace(/[-]/g, '\\-')).test(hay)).length }; })
+    .filter(o => o.s >= need).sort((a, b) => b.s - a.s).slice(0, 5).map(o => o.x) : [];
+  box.innerHTML = (local.length ? `<h4>In your feed</h4>${local.map(resultRow).join('')}` : '') + `<h4>From the internet</h4><div class="loader small"><div class="shimmer"></div>Searching “${esc(q)}”…</div>`;
+  let net = [];
+  try { net = full ? await RR.queryPapers(q) : await RR.quickSearch(q); } catch (e) { if (my === searchSeq) box.querySelector('.loader').outerHTML = '<p class="hint">Live search failed — are you online?</p>'; return; }
+  if (my !== searchSeq) return;   // a newer query is on screen
+  const seen = new Set(local.map(x => x.id)), rest = net.filter(x => !seen.has(x.id));
+  box.innerHTML = (local.length ? `<h4>In your feed</h4>${local.map(resultRow).join('')}` : '') +
+    `<h4>From the internet · ${rest.length} papers</h4>${rest.map(resultRow).join('') || '<p class="hint">No matches. Try other words or ⚙ → Venue quality: All.</p>'}` +
+    (!full && rest.length ? `<button class="ghost wide" data-full="${esc(q)}">More results for “${esc(q)}” ›</button>` : '');
+}
+function rememberSearch(q) {
+  q = q.trim().slice(0, 200); if (!q) return; const P = S.profile;
+  P.searches = [q, ...P.searches.filter(x => x !== q)].slice(0, 30);
   tokens(q).forEach(k => P.terms[k] = (P.terms[k] || 0) + 2); P.terms[q.toLowerCase()] = (P.terms[q.toLowerCase()] || 0) + 4; saveProfile();
-  const box = $('#searchResults'); box.innerHTML = '<div class="loader">Searching top venues…</div>';
-  try {
-    const r = await RR.queryPapers(q); S.interest = [...r.slice(0, 15), ...S.interest];
-    box.innerHTML = r.length ? r.map(x => `<div class="mini" data-id="${esc(x.id)}">${tierBadge(x)}${access(x)}<b>${esc(x.title)}</b><span>${esc(cite(x))} · ${x.cites || 0} cites</span></div>`).join('') : '<p class="hint">No top-venue matches. Try ⚙ → Venue quality: All.</p>';
-  } catch (e) { box.innerHTML = '<p class="hint">Live search failed — are you online?</p>'; }
+}
+function onSearchClick(e) {
+  const sh = $('#searchSheet');
+  if (e.target === sh || e.target.closest('[data-close]')) return sh.classList.add('hidden');
+  const sq = e.target.closest('[data-sq]'); if (sq) { $('#searchInput').value = sq.dataset.sq; rememberSearch(sq.dataset.sq); return liveSearch(sq.dataset.sq); }
+  const more = e.target.closest('[data-full]'); if (more) return liveSearch(more.dataset.full, true);
+  const r = e.target.closest('.res[data-id]'); if (!r) return;
+  rememberSearch($('#searchInput').value);
+  const it = S.extra[r.dataset.id] || findItem(r.dataset.id); if (!it) return;
+  sh.classList.add('hidden'); openDeck(it);           // close the search first, then open the paper's reel
 }
 
 // ---------------------------------------------------------------- settings
@@ -713,6 +785,7 @@ function wire() {
   $('#feed').addEventListener('click', onFeedClick);
   $('#deckClose').addEventListener('click', () => closeDeck());
   $('#deckAsk').addEventListener('click', () => { if (S.deck) openAsk(S.deck.it); });
+  $('#deckShare').addEventListener('click', () => { if (S.deck) share(S.deck.it); });
   $('#askSheet').addEventListener('click', onAskClick);
   $('#venueSheet').addEventListener('click', e => { if (e.target === e.currentTarget || e.target.closest('[data-close]')) e.currentTarget.classList.add('hidden'); }); $('#deckPrev').addEventListener('click', () => step(-1)); $('#deckNext').addEventListener('click', () => step(1));
   const st = $('#deckStage'); let x0 = null, y0 = null;
@@ -733,13 +806,15 @@ function wire() {
   zb.addEventListener('touchend', e => { if (lx == null || multi || LB.zoom > 1 || window.visualViewport?.scale > 1.05) { lx = null; return; }
     const dx = e.changedTouches[0].clientX - lx, dy = e.changedTouches[0].clientY - ly; lx = null;
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) lbStep(dx < 0 ? 1 : -1); else if (dy > 110 && Math.abs(dy) > Math.abs(dx) * 2) zb.classList.add('hidden'); }, { passive: true });
-  window.addEventListener('popstate', () => { const m = location.hash.match(/^#\/r\/(.+)/); if (m) { const it = findItem(decodeURIComponent(m[1])); if (it) openDeck(it, false); } else if (S.deck) closeDeck(false); });
+  window.addEventListener('popstate', () => { const m = location.hash.match(/^#\/r\/(.+)/); if (m) { if (!S.deck || S.deck.it.id !== decodeURIComponent(m[1])) openById(decodeURIComponent(m[1])); } else if (S.deck) closeDeck(false); });
   $('#btnRefresh').addEventListener('click', () => { S.ddl = null; sessionStorage.removeItem('rr_net'); sync(true); });
-  $('#btnSearch').addEventListener('click', () => { $('#searchSheet').classList.remove('hidden'); setTimeout(() => $('#searchInput').focus(), 50); });
+  $('#btnSearch').addEventListener('click', () => openSearch());
   $('#btnSettings').addEventListener('click', () => { renderSettings(); $('#settingsSheet').classList.remove('hidden'); });
-  $('#searchSheet').addEventListener('click', e => { if (e.target === e.currentTarget || e.target.closest('[data-close]')) return e.currentTarget.classList.add('hidden'); const m = e.target.closest('.mini'); if (m) { const it = findItem(m.dataset.id); if (it) openDeck(it); } });
+  $('#searchSheet').addEventListener('click', onSearchClick);
+  $('#searchInput').addEventListener('input', e => { clearTimeout(searchTimer); const v = e.target.value; searchTimer = setTimeout(() => liveSearch(v), 450); });
+  $('#shareSheet').addEventListener('click', onShareClick);
   $('#feed').addEventListener('click', e => { const m = e.target.closest('.sota .mini'); if (m) { const it = findItem(m.dataset.id); if (it) openDeck(it); } });
-  $('#searchForm').addEventListener('submit', e => { e.preventDefault(); doSearch($('#searchInput').value); });
+  $('#searchForm').addEventListener('submit', e => { e.preventDefault(); clearTimeout(searchTimer); const v = $('#searchInput').value; rememberSearch(v); S.interest = []; liveSearch(v, true); $('#searchInput').blur(); });
   $('#settingsSheet').addEventListener('click', onSettingsClick);
   $('#settingsSheet').addEventListener('change', e => {
     if (e.target.id === 'remember') { RR.settings.rememberKeys = e.target.checked; RR.saveSettings(); return toast(e.target.checked ? 'Keys remembered on this device' : 'Keys kept for this session only'); }
@@ -773,7 +848,7 @@ async function init() {
   const m = location.hash.match(/^#\/r\/(.+)/);
   const tabHash = location.hash.match(/^#(deadline|sota|venue)$/); if (tabHash) setTab(tabHash[1]);
   await sync();
-  if (m) { const it = findItem(decodeURIComponent(m[1])); if (it) openDeck(it, false); }
+  if (m) openById(decodeURIComponent(m[1]));
   deadlineBanner();
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => reg.update()).catch(() => {});
