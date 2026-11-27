@@ -512,9 +512,72 @@ RR.mdCut = (s, n) => {
 const protect = s => { const keep = []; return { s: s.replace(MDLINK, m => { keep.push(m); return '\u0001' + (keep.length - 1) + '\u0001'; }), back: t => t.replace(/\u0001(\d+)\u0001/g, (_, i) => keep[+i]) }; };
 RR.mdPlain = s => RR.smooth(String(s || '')).replace(/(\w)\(\[/g, '$1 ([').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/\*\*|__|\$/g, '');
 const RES_RE = /(result|qualitative|visuali[sz]ation|comparison with|compared with|performance|ablation|heat ?map|localization result|detection result|examples of|samples)/i;
+// ------------------------------------------------------------------ full-text sections (intro, related work, contributions, problem, findings)
+const SEC_RE = /^(abstract|introduction|related works?|literature review|background( and related work)?|prior works?|preliminar(?:y|ies)|problem (?:formulation|definition|statement|setting)|methods?|methodology|proposed (?:method|approach|framework)|approach|our approach|framework|experiments?|experimental (?:setup|results|evaluation)|results?(?: and (?:discussion|analysis))?|evaluation|ablation stud(?:y|ies)|discussion|limitations?(?: and future work)?|conclusions?(?: and future work)?|future work)\b/i;
+RR.sectionize = text => {
+  const t = String(text || '').replace(/^([^\n|#!][^\n]{2,90})\n(?:=+|-{3,})[ \t]*$/gm, '# $1');   // setext → ATX headings
+  const secs = []; let cur = { num: '', title: '', body: [] };
+  for (const ln of t.split('\n')) {
+    const atx = ln.match(/^\s*#{1,6}\s+(.+)$/), bare = ln.trim();
+    const cand = atx ? atx[1] : (bare.length < 70 && /^[\dIVX]+(?:\.\d+)*\.?\s+[A-Z]/.test(bare) || SEC_RE.test(bare)) && bare.split(/\s+/).length <= 7 && !/[.:,]$/.test(bare) ? bare : null;
+    if (cand) {
+      const c = cand.replace(/[*_]/g, '').trim(), m = c.match(/^([\dIVX]+(?:\.\d+)*)\.?\s+(.*)$/);
+      if (!atx && !SEC_RE.test(m ? m[2] : c)) { cur.body.push(ln); continue; }
+      secs.push(cur); cur = { num: m ? m[1] : '', title: m ? m[2] : c, body: [] };
+    } else cur.body.push(ln);
+  }
+  secs.push(cur);
+  return secs.map(x => ({ num: x.num, title: x.title, body: x.body.join('\n').trim() })).filter(x => x.title || x.body.length > 200);
+};
+const gather = (secs, re) => {   // a section plus its numbered sub-sections (2 → 2.1, 2.2 …)
+  const i = secs.findIndex(x => re.test(x.title)); if (i < 0) return '';
+  const top = secs[i].num.split('.')[0]; let body = secs[i].body;
+  for (let j = i + 1; j < secs.length; j++) { if (top && secs[j].num.startsWith(top + '.')) body += '\n\n' + secs[j].body; else if (top || secs[j].num) break; else break; }
+  return body;
+};
+const sentsP = t => { const P = protect(String(t || '').replace(/\s+/g, ' ')); return P.s.replace(/\b(et al|e\.g|i\.e|vs|Fig|Eq|Sec|Tab)\.\s/g, '$1\u0003 ').split(/(?<=[.!?])\s+(?=[A-Z0-9(\["“])/).map(x => P.back(x.replace(/\u0003/g, '.')).trim()).filter(x => x.length > 30 && !/^!\[|^\|/.test(x)); };
+RR.paperSections = text => {
+  const secs = RR.sectionize(text);
+  const intro = gather(secs, /^introduction/i), related = gather(secs, /related|literature|prior work|background/i);
+  const probSec = gather(secs, /problem|preliminar/i), exp = gather(secs, /experiment|results?|evaluation/i);
+  // contributions: the bullet list after "our contributions …", else "we propose/introduce…" sentences
+  let contrib = [];
+  const ci = intro.search(/contribution/i);
+  if (ci >= 0) {
+    const tail = intro.slice(ci, ci + 2500);
+    contrib = tail.split('\n').filter(l => /^\s*(?:[-*•]|\(?(?:\d+|[ivx]+)[).])\s+/i.test(l)).map(l => l.replace(/^\s*(?:[-*•]|\(?(?:\d+|[ivx]+)[).])\s+/i, '').replace(/\*\*/g, '').trim()).filter(l => l.length > 25).slice(0, 5);
+    if (contrib.length < 2) contrib = sentsP(tail).filter(x => /\b(we|our)\b/i.test(x) && /(propose|introduce|present|design|develop|show|demonstrat|achiev|release|construct|build|conduct)/i.test(x)).slice(0, 4);
+  }
+  if (contrib.length < 2) contrib = sentsP(intro).filter(x => /\bwe (propose|introduce|present|design|develop|release|construct)\b/i.test(x)).slice(0, 4);
+  // problem statement
+  const prob = (probSec ? sentsP(probSec).slice(0, 3) : []).concat(sentsP(intro).filter(x => /\b(however|challeng|limitation|remain|lack|fail|struggl|vulnerab|unclear|unexplored|problem|cannot|difficult)/i.test(x)).slice(0, 3)).slice(0, 4);
+  // literature review: one card per related-work paragraph (theme + gist, citations stay as links)
+  const lit = related.split(/\n{2,}/).map(x => x.replace(/\s+/g, ' ').trim()).filter(x => x.length > 120 && !/^!\[|^\||^(Figure|Fig\.|Table|Algorithm)\s*\d/i.test(x)).slice(0, 6).map(par => {
+    const th = par.match(/^\*\*([^*]{3,70})\*\*\.?\s*/) || par.match(/^([A-Z][A-Za-z0-9 ,\-/&()]{3,60})\.\s+(?=[A-Z])/);
+    const rest = th ? par.slice(th[0].length) : par, ss = sentsP(rest);
+    return { theme: th ? th[1].trim() : '', text: RR.mdCut(ss.slice(0, 2).join(' '), 300), refs: (par.match(/\]\(https?:[^)]*#bib/g) || []).length };
+  }).filter(x => x.text);
+  const findings = sentsP(exp).filter(x => /(\d+(\.\d+)?\s?%|outperform|surpass|state-of-the-art|improv|achiev|significantly|best)/i.test(x)).slice(0, 5).map(x => RR.mdCut(x, 280));
+  return { intro: '', problem: prob.map(x => RR.mdCut(x, 260)), contrib: contrib.map(x => RR.mdCut(x, 260)), lit, findings };
+};
+/* No arXiv HTML? Read the open-access PDF as text (sections only — PDFs don't give us figure images). */
+RR.paperText = async p => {
+  const key = 'sec2:' + p.id; const c = RR.cache.get(key, 24 * 14); if (c !== undefined) return c;
+  const ax = p.arxiv || (await RR.ensureArxiv(p).catch(() => ''));
+  const pdf = RR.safeUrl(p.pdf || '') || (ax ? 'https://arxiv.org/pdf/' + ax : '');
+  if (!pdf) { RR.cache.set(key, null); return null; }
+  const h = RR.settings.jinaKey ? { headers: { Authorization: 'Bearer ' + RR.settings.jinaKey } } : {};
+  let out = null;
+  try {
+    const t = RR.smooth(RR.tex(await queued(() => RR.text('https://r.jina.ai/' + pdf, h, 45000))));
+    if (t.length > 3000) { const sec = RR.paperSections(t), ex = extras(t, false); out = { ...sec, conclusion: ex.conclusion, limitations: ex.limitations, via: 'PDF (text only)', url: pdf }; }
+  } catch (e) {}
+  RR.cache.set(key, out); return out;
+};
+
 RR.figures = async p => {
   const id = await RR.ensureArxiv(p).catch(() => ''); if (!id) return null;
-  const key = 'fig8:' + id; const c = RR.cache.get(key, 24 * 14); if (c !== undefined) return c;
+  const key = 'fig9:' + id; const c = RR.cache.get(key, 24 * 14); if (c !== undefined) return c;
   const h = RR.settings.jinaKey ? { headers: { Authorization: 'Bearer ' + RR.settings.jinaKey } } : {};
   // 1) arXiv native HTML (2024+)  2) ar5iv (older arXiv papers)  3) proxy fallback for either
   const tries = [
@@ -533,7 +596,7 @@ RR.figures = async p => {
   const ex = extras(got.isHtml ? got.raw : got.text, got.isHtml);
   const paras = got.text.split(/\n{2,}/).map(x => x.replace(/\s+/g, ' ').trim()).filter(x => x.length > 80 && !/^!\[|^[*_\W]*(figure|fig\.|table)\s*\d/i.test(x));
   const ctxOf = {}; figs.forEach(f => { const re = new RegExp(`(Fig(ure|\\.)?\\s*~?${f.n})(?!\\d)`, 'i'); const h = paras.find(x => re.test(x)); if (h) { const P = protect(h), sn = P.s.match(/[^.]*\bFig(?:ure|\.)?\s*~?\d[^.]*\./i); ctxOf[f.n] = RR.mdCut(P.back((sn ? sn[0] : P.s).trim()), 360); } });
-  const out = { id, html: got.html, figs, arch, results, teaser, ctxOf, ...ex, context: contextFor(got.text, arch.n),
+  const out = { id, html: got.html, via: /ar5iv/.test(got.html) ? 'ar5iv full text' : 'arXiv HTML full text', sec: RR.paperSections(got.text), figs, arch, results, teaser, ctxOf, ...ex, context: contextFor(got.text, arch.n),
     method: (got.text.match(/#+\s*\d*\.?\s*(?:Method|Methodology|Proposed[^\n]*|Approach)[^\n]*\n([\s\S]{200,3500})/i)?.[1] || '').replace(/\s+/g, ' ').slice(0, 3500) };
   RR.cache.set(key, out); return out;
 };

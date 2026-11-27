@@ -113,14 +113,14 @@ const READ_IF = {
 };
 
 /* Build the story. `sum` = quick or AI summary; `fig` = figures result (may be null/undefined); `peers` = other papers for the quiz. */
-RR.story = (p, sum, fig, peers = []) => {
+RR.story = (p, sum, fig, peers = [], txt = null) => {
   const ai = sum.story || null, kind = ai?.kind || RR.paperKind(p), name = ai?.name || RR.methodName(p) || 'this paper';
   const ss = sents(p.abstract), find = re => ss.find(s => re.test(s));
   const why = find(/\b(however|challeng|limitation|existing|remain|lack|suffer|vulnerab|fail|struggl|threat|problem)/i);
   const nov = find(/\b(we propose|we introduce|we present|we develop|this paper|in this work|novel)/i);
   const res = ss.filter(s => /(outperform|achiev|state-of-the-art|%|improv|surpass|demonstrat|experiment)/i.test(s)).slice(0, 3);
   const archSteps = ai?.pipeline || ss.filter(s => /\b(module|encoder|decoder|branch|backbone|attention|fusion|network|stage|loss|graph|head)\b/i.test(s)).slice(0, 3);
-  const out = [], f = fig || null;
+  const out = [], f = fig || null, T = f?.sec || txt || null, fx = f || txt || null;
 
   // 0) The abstract, colour-coded by role (problem · idea · method · result)
   const absSlide = !ss.length ? null : ({ type: 'abstract', icon: '🧾', title: 'Abstract, decoded', parts: ss.map(x => ({ t: x,
@@ -138,6 +138,11 @@ RR.story = (p, sum, fig, peers = []) => {
     problem: ai?.before || (why ? clip(why, 200) : hookQuestion(p, kind, null)), question: hookQ, sub: ai?.one_liner || sum.tldr || '' });
   if (absSlide) out.push(absSlide);
 
+  // 1b) Read from the full text: problem statement · literature review · novelty / contributions
+  if (T?.problem?.length) out.push({ type: 'problem', icon: '🎯', title: 'Problem statement', points: T.problem, intro: T.intro });
+  if (T?.lit?.length) out.push({ type: 'litreview', icon: '📚', title: 'Literature review', cards: T.lit });
+  if (T?.contrib?.length) out.push({ type: 'contrib', icon: '💡', title: 'Novelty & contributions', items: T.contrib });
+
   // 2) Before vs after — only when we have distinct, paper-specific text for both sides (AI)
   if (ai?.before && ai?.after && kind !== 'survey')
     out.push({ type: 'versus', icon: '⚖️', title: kind === 'attack' ? 'Defender vs attacker' : kind === 'dataset' ? 'Old data vs new data' : `Before ${name} → with ${name}`,
@@ -150,9 +155,11 @@ RR.story = (p, sum, fig, peers = []) => {
     flow: archSteps.length > 1 ? archSteps.map(s => clip(s, 120)) : [], points: archSteps.length === 1 ? archSteps : [] });
 
   // 3b) Every other figure of the paper gets its own slide, with the sentence where the authors cite it
-  if (f) f.figs.filter(g => g !== f.arch && g !== f.results && g !== f.teaser).forEach(g => out.push({ type: 'figfull', fig: g, note: f.ctxOf?.[g.n] || '',
-    kicker: /heat ?map|grad-?cam|attention map|visuali[sz]/i.test(g.caption) ? 'Visualization' : /ablation/i.test(g.caption) ? 'Ablation' : /compar|versus|vs\.?\s/i.test(g.caption) ? 'Comparison'
-      : /example|sample|dataset|data distribution/i.test(g.caption) ? 'Examples & data' : /overview|pipeline|framework|illustrat/i.test(g.caption) ? 'Overview' : /curve|plot|roc|trade-?off|performance/i.test(g.caption) ? 'Performance plot' : 'Figure' }));
+  const kick = g => /heat ?map|grad-?cam|attention map|visuali[sz]|qualitative/i.test(g.caption) ? 'Visualization' : /ablation/i.test(g.caption) ? 'Ablation' : /compar|versus|vs\.?\s/i.test(g.caption) ? 'Comparison'
+      : /example|sample|dataset|data distribution/i.test(g.caption) ? 'Examples & data' : /overview|pipeline|framework|illustrat/i.test(g.caption) ? 'Overview' : /curve|plot|roc|trade-?off|performance|accuracy|auc/i.test(g.caption) ? 'Performance plot' : 'Figure';
+  const RES_K = /^(Visualization|Ablation|Comparison|Performance plot)$/;
+  const rest = f ? f.figs.filter(g => g !== f.arch && g !== f.results && g !== f.teaser).map(g => ({ type: 'figfull', fig: g, note: f.ctxOf?.[g.n] || '', kicker: kick(g) })) : [];
+  rest.filter(x => !RES_K.test(x.kicker)).forEach(x => out.push(x));
   (f?.algos || []).forEach(a => out.push({ type: 'algo', icon: '🧮', title: `Algorithm ${a.n}`, algo: a }));
 
   // 4) Words you'll meet — beginner glossary, only terms this paper uses
@@ -161,11 +168,15 @@ RR.story = (p, sum, fig, peers = []) => {
 
   // 5) Numbers that matter + results figure
   const stats = ai?.numbers?.length ? ai.numbers.map(x => ({ v: x.value, l: x.label })) : extractStats(p.abstract);
+  // 5) RESULT ANALYSIS — main results figure, result tables, visualizations/ablations, key numbers, findings
+  const RES_T = /result|compar|perform|accura|auc|eer|sota|state-of-the-art|benchmark|ablation|evaluat|psnr|ssim|bit|detection|f1|precision/i;
+  const tabs = f?.tables || [], resTabs = tabs.filter(t => RES_T.test(t.caption)), othTabs = tabs.filter(t => !RES_T.test(t.caption));
   if (f?.results) out.push({ type: 'figfull', fig: f.results, kicker: 'Results · full view', note: f.ctxOf?.[f.results.n] || '' });
-  if (stats.length || res.length) out.push({ type: 'stats', results: true, icon: '📊', title: kind === 'dataset' ? 'By the numbers' : 'Does it work?', stats, points: ai?.results || res.map(s => clip(s, 160)) });
-
-  // 5b) Every table, as a real table
-  (f?.tables || []).forEach(t => out.push({ type: 'table', icon: '📋', title: `Table ${t.n}`, table: t }));
+  resTabs.forEach(t => out.push({ type: 'table', icon: /ablation/i.test(t.caption) ? '🔬' : '📊', title: `${/ablation/i.test(t.caption) ? 'Ablation' : 'Results'} · Table ${t.n}`, table: t }));
+  rest.filter(x => RES_K.test(x.kicker)).forEach(x => out.push(x));
+  if (stats.length || res.length) out.push({ type: 'stats', results: true, icon: '📈', title: kind === 'dataset' ? 'By the numbers' : 'Does it work?', stats, points: ai?.results || res.map(s => clip(s, 160)) });
+  if (T?.findings?.length) out.push({ type: 'findings', icon: '🔎', title: 'Result analysis', points: T.findings });
+  othTabs.forEach(t => out.push({ type: 'table', icon: '📋', title: `Table ${t.n}`, table: t }));
 
   // 6) Tested on
   const ds = ai?.datasets?.length ? ai.datasets : datasets(p);
@@ -173,9 +184,11 @@ RR.story = (p, sum, fig, peers = []) => {
 
   // 7) Explain like I'm new / limitations (AI only — never invented)
   if (ai?.eli5) out.push({ type: 'eli5', icon: '🧒', title: 'Explain it like I’m new', text: ai.eli5 });
-  const lim = f?.limitations || (ai?.limitations && !/not stated/i.test(ai.limitations) ? ai.limitations : '');
-  out.push({ type: 'limits', icon: '⚠️', title: 'Limitations', text: lim, from: f?.limitations ? 'paper' : lim ? 'ai' : '' });
-  if (f?.conclusion) out.push({ type: 'conclusion', icon: '🏁', title: 'The authors conclude', text: f.conclusion });
+  if (f?.figs?.length > 1) out.push({ gallery: true });
+  const lim = fx?.limitations || (ai?.limitations && !/not stated/i.test(ai.limitations) ? ai.limitations : '');
+  out.push({ type: 'limits', icon: '⚠️', title: 'Limitations', text: lim, from: fx?.limitations ? 'paper' : lim ? 'ai' : '' });
+  if (fx?.conclusion) out.push({ type: 'conclusion', icon: '🏁', title: 'The authors conclude', text: fx.conclusion });
+  if (p.type === 'paper') out.push({ type: 'related', icon: '🔗', title: 'Related & SOTA papers' });
 
   // 8) Quick check — spot this paper's idea among peers (interactive)
   const mine = clip(nov || ss[0], 150), others = peers.filter(x => x.id !== p.id && x.abstract && x.domain === p.domain).slice(0, 8)

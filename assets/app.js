@@ -311,8 +311,10 @@ async function enrich(it) {
   const figP = RR.figures(it).then(async f => {
     if (S.deck !== dk) return f;
     if (f) await Promise.all(f.figs.flatMap(g => g.srcs || [g.src]).slice(0, 12).map(async u => { dk.crops[u] = await RR.cropFigure(u); }));
-    dk.fig = f || null; refresh(); return f;
-  }).catch(() => { dk.fig = null; refresh(); });
+    dk.fig = f || null;
+    if (!f) dk.text = await RR.paperText(it).catch(() => null); // no arXiv HTML → read the open PDF as text
+    refresh(); return f;
+  }).catch(() => { dk.fig = null; dk.text = null; refresh(); });
   if (RR.hasLLM() && !it.slides && it.abstract) {
     dk.aiLoading = true; refresh();
     try { const f = await figP; dk.sum = await RR.aiSummary(it, f?.method || ''); } catch (e) { toast('AI summary failed — showing quick summary'); }
@@ -324,8 +326,8 @@ function build() {
   const cover = { cover: true, title: it.title, text: sum.inshort || it.inshort };
   let body;
   if (isPaper && !it.classic) {
-    const key = (sum.by || '') + '|' + (dk.fig ? dk.fig.id : dk.fig === null ? 'none' : 'wait');
-    if (dk.storyKey !== key) { dk.story = RR.story(it, sum, dk.fig, allPapers()); dk.storyKey = key; }
+    const key = (sum.by || '') + '|' + (dk.fig ? dk.fig.id : dk.fig === null ? 'none' : 'wait') + '|' + (dk.text ? 't' : dk.text === null ? 'x' : '');
+    if (dk.storyKey !== key) { dk.story = RR.story(it, sum, dk.fig, allPapers(), dk.text || null); dk.storyKey = key; }
     body = dk.story.slides;
   } else {
     body = (sum.slides || []).map(s => s.arch || /^architecture/i.test(s.title) ? { ...s, arch: true } : /result/i.test(s.title) ? { ...s, results: true } : s);
@@ -333,8 +335,8 @@ function build() {
     if (isPaper) { const i = body.findIndex(s => s.arch); body.splice(0, 0, ...body.splice(i, 1)); }
   }
   const slides = [cover, ...body];
-  if (isPaper && dk.fig && dk.fig.figs.length > 1) slides.push({ gallery: true });
-  if (isPaper) slides.push({ type: 'related', icon: '🔗', title: 'Related papers' });
+  if (isPaper && dk.fig && dk.fig.figs.length > 1 && !slides.some(s => s.gallery)) slides.push({ gallery: true });
+  if (isPaper && !slides.some(s => s.type === 'related')) slides.push({ type: 'related', icon: '🔗', title: 'Related & SOTA papers' });
   if (isPaper || it.url) slides.push({ src: true });
   dk.slides = slides; if (dk.i >= slides.length) dk.i = slides.length - 1;
 }
@@ -350,6 +352,14 @@ function figHTML(fig, label) {
     <figcaption><span class="fign">${esc(label || 'Figure')} ${fig.n}.</span> ${rich(fig.caption, 280)}
       <span class="srcline">Source: ${A(RR.sourceOf(it).url, esc(cite(it)), 'cite')}</span></figcaption></figure>`;
 }
+function readState(dk) {
+  const f = dk.fig, t = dk.text, nT = f?.tables?.length || 0, nA = f?.algos?.length || 0;
+  if (f === undefined || (f === null && t === undefined)) return `<p class="readst wait"><span class="spin">📖 Opening the full paper…</span> figures, tables & sections load into the slides</p>`;
+  if (f) return `<p class="readst ok">📖 Read the full paper (${esc(f.via || 'arXiv')}) · ${f.figs.length} figure${f.figs.length === 1 ? '' : 's'}${nT ? ` · ${nT} table${nT === 1 ? '' : 's'}` : ''}${nA ? ` · ${nA} algorithm${nA === 1 ? '' : 's'}` : ''}${f.sec?.contrib?.length ? ' · contributions' : ''}${f.sec?.lit?.length ? ' · lit review' : ''}</p>`;
+  if (t) return `<p class="readst mid">📄 Read the open PDF (text only — figure images need arXiv HTML)${t.contrib?.length ? ' · contributions' : ''}${t.lit?.length ? ' · lit review' : ''}</p>`;
+  return `<p class="readst no">🔒 Full text isn’t openly readable — slides use abstract + metadata. Open the source on campus Wi-Fi for the PDF.</p>`;
+}
+const srcOfText = dk => dk.fig?.html || dk.text?.url || RR.sourceOf(dk.it).url;
 function slideHTML(s, i, n) {
   const dk = S.deck, it = dk.it, num = `<div class="num">${i + 1} / ${n}${dk.aiLoading ? ' · <span class="spin">AI summarising…</span>' : ''}</div>`;
   if (s.cover) {
@@ -360,6 +370,7 @@ function slideHTML(s, i, n) {
       ${it.type === 'paper' ? `<p class="cover-auth">${esc(it.authors || '')}</p>${insts.length ? `<p class="cover-inst">🏛 ${insts.map(esc).join(' · ')}</p>` : ''}<p class="hint">${esc(pubLine(it))}${it.cites ? ' · ' + it.cites + ' citations' : ''}</p>` : ''}
       ${t ? figHTML(t, 'Figure') : ''}
       <p>${esc(s.text)}</p>
+      ${it.type === 'paper' ? readState(dk) : ''}
       ${dk.sum.by ? `<p class="hint small">Summary: ${esc(dk.sum.by)}</p>` : ''}</div>`;
   }
   const head = `${num}<h3><span class="ico">${esc(s.icon || '•')}</span>${esc(s.title)}</h3>`;
@@ -388,14 +399,22 @@ function slideHTML(s, i, n) {
     <ol class="algo">${s.algo.lines.map(l => `<li>${esc(l.replace(/^\d+:\s*/, ''))}</li>`).join('')}</ol><p class="hint small">From ${A(dk.fig.html, esc(cite(dk.it)), 'cite')}</p></div>`;
   if (s.type === 'limits') return `<div class="slide">${head}${s.text ? `<div class="bubble warn">${rich(s.text)}</div><p class="hint small">${s.from === 'paper' ? 'From the paper’s own limitations / future-work text.' : 'AI-extracted from the abstract — check the paper.'}</p>`
     : `<p>The open text doesn’t state limitations explicitly. Good questions to ask while reading:</p><ul><li>Does it work on unseen generators / datasets?</li><li>Is it robust to compression, resizing and other real-world edits?</li><li>What does it cost (compute, data, labels)?</li></ul>`}</div>`;
-  if (s.type === 'conclusion') return `<div class="slide">${head}<div class="explain"><blockquote>${rich(s.text)}</blockquote></div><p class="hint small">From the conclusion of ${A(dk.fig.html, esc(cite(dk.it)), 'cite')}</p></div>`;
+  if (s.type === 'conclusion') return `<div class="slide">${head}<div class="explain"><blockquote>${rich(s.text)}</blockquote></div><p class="hint small">From the conclusion of ${A(srcOfText(dk), esc(cite(dk.it)), 'cite')}</p></div>`;
   if (s.type === 'hook') return `<div class="slide hook">${num}<div class="hook-ico">${esc(s.icon)}</div><div class="hook-k">${esc(s.title)}</div>
     <p class="hook-prob">${rich(s.problem)}</p><h3 class="hook-q">${esc(s.question)}</h3>${s.sub ? `<p class="hook-sub">${rich(s.sub)}</p>` : ''}<p class="hint small">Tap → to see how the paper answers it</p></div>`;
   if (s.type === 'versus') return `<div class="slide">${head}<div class="versus"><div class="vs-l"><b>${esc(s.left.h)}</b><p>${rich(s.left.t)}</p></div>
     <div class="vs-mid">→</div><div class="vs-r"><b>${esc(s.right.h)}</b><p>${rich(s.right.t)}</p></div></div></div>`;
   if (s.type === 'terms') return `<div class="slide">${head}<div class="terms">${s.terms.map(t => `<div class="term"><b>${esc(t.t)}</b><span>${rich(t.d)}</span></div>`).join('')}</div>
     <p class="hint small">Only terms this paper actually uses.</p></div>`;
-  if (s.type === 'stats') return `<div class="slide">${head}${dk.fig?.results ? figHTML(dk.fig.results, 'Figure') : ''}
+  if (s.type === 'problem') return `<div class="slide">${head}${s.intro ? `<p class="hint">${rich(s.intro)}</p>` : ''}<div class="probs">${s.points.map(x => `<div class="prob">${rich(x)}</div>`).join('')}</div>
+    <p class="hint small">From the introduction of ${A(srcOfText(dk), esc(cite(dk.it)), 'cite')}</p></div>`;
+  if (s.type === 'litreview') return `<div class="slide">${head}<div class="lits">${s.cards.map(c => `<div class="lit">${c.theme ? `<b>${esc(c.theme)}</b>` : ''}<span>${rich(c.text)}</span>${c.refs ? `<em>${c.refs} cited work${c.refs === 1 ? '' : 's'}</em>` : ''}</div>`).join('')}</div>
+    <p class="hint small">Condensed from the related-work section · citation links open the cited work</p></div>`;
+  if (s.type === 'contrib') return `<div class="slide">${head}<ol class="contribs">${s.items.map(x => `<li>${rich(x)}</li>`).join('')}</ol>
+    <p class="hint small">The authors’ own contribution list · ${A(srcOfText(dk), esc(cite(dk.it)), 'cite')}</p></div>`;
+  if (s.type === 'findings') return `<div class="slide">${head}<div class="probs">${s.points.map(x => `<div class="prob res">${rich(x)}</div>`).join('')}</div>
+    <p class="hint small">Sentences from the experiments section</p></div>`;
+  if (s.type === 'stats') return `<div class="slide">${head}
     ${s.stats?.length ? `<div class="stats">${s.stats.map(x => `<div class="stat"><b>${esc(x.v)}</b><span>${esc(x.l)}</span></div>`).join('')}</div>` : ''}${ul(s.points)}</div>`;
   if (s.type === 'chips') return `<div class="slide">${head}<div class="dchips">${s.chips.map(c => `<span>${esc(c)}</span>`).join('')}</div><p class="hint">${esc(s.note || '')}</p></div>`;
   if (s.type === 'eli5') return `<div class="slide eli5">${head}<div class="bubble">${rich(s.text)}</div></div>`;
